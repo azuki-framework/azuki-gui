@@ -18,6 +18,7 @@
 package org.azkfw.gui.dialog;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Font;
@@ -41,7 +42,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.border.BevelBorder;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -61,14 +61,14 @@ public class PreferenceDialog extends JDialog {
 	private static final long serialVersionUID = 4722800289396390658L;
 
 	private JTree tree;
-	private JPanel pnlLeft;
+	private JPanel pnlRight;
 	private JSplitPane splitPanel;
 	private JButton btnOk;
 	private JButton btnCancel;
-	
+
 	private TitlePanel pnlTitle;
-	
-	private JScrollPane pnlClient;
+
+	private JPanel pnlClient;
 
 	private PreferenceData data;
 
@@ -261,10 +261,6 @@ public class PreferenceDialog extends JDialog {
 	}
 
 	private boolean addNode(final String[] ids, final String aTitle, final JComponent aComponent) {
-		for (String id : ids) {
-			// System.out.println(id);
-		}
-
 		List<String> list = new ArrayList<String>();
 		for (String id : ids) {
 			list.add(id);
@@ -309,13 +305,54 @@ public class PreferenceDialog extends JDialog {
 		}
 	}
 
+	private class TestPanel extends JPanel {
+
+		/** serialVersionUID */
+		private static final long serialVersionUID = -8475543665402763379L;
+
+		private JScrollPane scroll;
+		private JPanel panel;
+		private JLabel lblName;
+
+		public TestPanel() {
+			setLayout(null);
+			setBackground(Color.pink);
+
+			panel = new JPanel();
+			panel.setLayout(null);
+			panel.setBackground(Color.red);
+			panel.setLocation(0, 0);
+			panel.setSize(600, 600);
+
+			lblName = new JLabel("AAA");
+			lblName.setLocation(0, 0);
+			lblName.setSize(200, 200);
+			panel.add(lblName);
+
+			scroll = new JScrollPane(panel);
+			scroll.setLocation(0, 0);
+			scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+			scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+
+			add(scroll);
+
+			addComponentListener(new ComponentAdapter() {
+				@Override
+				public void componentResized(final ComponentEvent event) {
+					scroll.setSize(getSize());
+				}
+			});
+		}
+	}
+
 	private void init() {
 		setLayout(null);
 
 		data = new PreferenceData("", "", null);
 		addNode("/aaa/bbb/ccc", "CCC", new JButton("button"));
-		addNode("/aaa/bbb", "BBB", null);
-		addNode("/bbb", "BBB", new JLabel("Label"));
+		addNode("/aaa/bbb", "BBB", new TestPanel());
+		addNode("/aaa", "AAA", new TestPanel());
+		addNode("/bbb", "BBB", new TestPanel());
 		addNode("/bbb/1", "BBB1", null);
 		addNode("/bbb/2", "BBB2", null);
 
@@ -329,38 +366,49 @@ public class PreferenceDialog extends JDialog {
 
 		pnlTitle = new TitlePanel();
 		pnlTitle.setLocation(0, 0);
-		pnlClient = new JScrollPane();
-		pnlClient.setBorder(new EmptyBorder(2, 2, 2, 2));
-		pnlClient.setLocation(0,40);
-		
-		pnlLeft = new JPanel();
-		pnlLeft.setLayout(null);
-		pnlLeft.add(pnlTitle);
-		pnlLeft.add(pnlClient);
 
-		splitPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,true);
+		pnlClient = new JPanel();
+		pnlClient.setLayout(null);
+		pnlClient.setLocation(0, 40);
+		pnlClient.setBackground(Color.blue);
+		pnlClient.add(new TestPanel());
+
+		pnlRight = new JPanel();
+		pnlRight.setBackground(Color.green);
+		pnlRight.setLayout(null);
+		pnlRight.add(pnlTitle);
+		pnlRight.add(pnlClient);
+
+		splitPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true);
 		splitPanel.setLocation(0, 0);
 		splitPanel.setDividerLocation(160);
 		splitPanel.setDividerSize(6);
+
 		btnOk = new JButton("OK");
 		btnOk.setSize(160, 32);
 		btnCancel = new JButton("キャンセル");
 		btnCancel.setSize(160, 32);
 
 		splitPanel.setLeftComponent(treeScrollPanel);
-		splitPanel.setRightComponent(pnlLeft);
+		splitPanel.setRightComponent(pnlRight);
 
 		add(splitPanel);
 		add(btnOk);
 		add(btnCancel);
 
-		pnlLeft.addComponentListener(new ComponentAdapter() {
+		pnlRight.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(final ComponentEvent event) {
-				int width = pnlLeft.getWidth();
-				int height = pnlLeft.getHeight();
-				pnlTitle.setSize(width,40);
-				pnlClient.setSize(width, height-40);
+				int width = pnlRight.getWidth();
+				int height = pnlRight.getHeight();
+				pnlTitle.setSize(width, 40);
+				pnlClient.setSize(width, height - 40);
+
+				if (0 < pnlClient.getComponentCount()) {
+					System.out.println("change component");
+					Component c = pnlClient.getComponent(0);
+					c.setBounds(0, 0, width, height - 40);
+				}
 			}
 		});
 		btnOk.addActionListener(new ActionListener() {
@@ -387,14 +435,16 @@ public class PreferenceDialog extends JDialog {
 					PreferenceData dd = (PreferenceData) aa.getUserObject();
 					if (add) {
 						pnlClient.removeAll();
-						if (null != dd.getComponent()) {
-							pnlClient.add(dd.getComponent());
-							dd.getComponent().setBounds(10, 10, 80, 80);
+
+						JComponent component = dd.getComponent();
+						if (null != component) {
+							pnlClient.add(component);
+							component.setSize(pnlClient.getSize());
 						}
 						pnlClient.invalidate();
 						pnlClient.validate();
 						pnlClient.repaint();
-						
+
 						pnlTitle.setTitle(dd.getTitle());
 					}
 				}
@@ -416,13 +466,13 @@ public class PreferenceDialog extends JDialog {
 
 		setSize(800, 400);
 	}
-	
+
 	private void onClickOkButton() {
-		
+
 	}
-	
+
 	private void onClickCancelButton() {
-		
+
 	}
 
 	private void doComponentResized() {
@@ -444,41 +494,44 @@ public class PreferenceDialog extends JDialog {
 			setLocation(x, y);
 		}
 	}
-	
+
 	private class TitlePanel extends JPanel {
-		
+
+		/** serialVersionUID */
+		private static final long serialVersionUID = 1839617953546971996L;
+
 		private JLabel lblTitle;
 		private JLabel lblBorder;
-		
+
 		public TitlePanel() {
 			setLayout(null);
-			
-			lblTitle = new JLabel("");			
+
+			lblTitle = new JLabel("");
 			lblTitle.setFont(new Font(Font.SERIF, Font.BOLD, 24));
-			lblTitle.setLocation(10,0);
-			
+			lblTitle.setLocation(10, 0);
+
 			lblBorder = new JLabel();
-			lblBorder.setBorder( new BevelBorder(BevelBorder.LOWERED) );
-						
+			lblBorder.setBorder(new BevelBorder(BevelBorder.LOWERED));
+
 			add(lblTitle);
 			add(lblBorder);
-			
+
 			addComponentListener(new ComponentAdapter() {
 				@Override
 				public void componentResized(ComponentEvent event) {
 					int width = getWidth();
 					int height = getHeight();
-					
-					lblTitle.setSize(width-20,height-3);
-					lblBorder.setBounds(-2, height-3 ,width+4, 3);
+
+					lblTitle.setSize(width - 20, height - 3);
+					lblBorder.setBounds(-2, height - 3, width + 4, 3);
 				}
 			});
-			
+
 		}
-		
+
 		public void setTitle(final String aTitle) {
 			lblTitle.setText(aTitle);
 		}
-		
+
 	}
 }

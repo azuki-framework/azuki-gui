@@ -100,10 +100,12 @@ public class FileExplorerTree extends JTree {
 				if (SwingUtilities.isLeftMouseButton(event) && event.getClickCount() == 2) {
 					JTree tree = (JTree) event.getSource();
 					TreePath path = tree.getPathForLocation(event.getX(), event.getY());
-					Object obj = path.getLastPathComponent();
-					if (obj instanceof FileExplorerFileTreeNode) {
-						FileExplorerFileTreeNode fileNode = (FileExplorerFileTreeNode) obj;
-						doOpenFile(fileNode.getFile());
+					if (null != path) {
+						Object obj = path.getLastPathComponent();
+						if (obj instanceof FileExplorerFileTreeNode) {
+							FileExplorerFileTreeNode fileNode = (FileExplorerFileTreeNode) obj;
+							doOpenFile(fileNode.getFile());
+						}
 					}
 				}
 			}
