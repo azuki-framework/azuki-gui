@@ -38,4 +38,5 @@ public class ToolBoxMenuBar extends JMenuBar {
 		menuFile = new JMenu("ファイル");
 		add(menuFile);
 	}
+
 }

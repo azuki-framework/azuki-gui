@@ -17,12 +17,12 @@
  */
 package org.azkfw.toolbox;
 
-import java.awt.Color;
 import java.awt.Insets;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -30,7 +30,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.UIManager;
 
+import org.azkfw.business.task.server.MultiTaskServerAdapter;
+import org.azkfw.business.task.server.MultiTaskServerEvent;
 import org.azkfw.gui.tree.FileExplorerTree;
+import org.azkfw.gui.tree.FileExplorerTreeAdapter;
+import org.azkfw.gui.tree.FileExplorerTreeEvent;
 
 /**
  * このクラスは、ツールボックスのメインフレームクラスです。
@@ -78,6 +82,14 @@ public class ToolBoxFrame extends JFrame {
 		splitSub.setBorder(null);
 
 		treeFile = new FileExplorerTree();
+		treeFile.addFileExplorerTreeListener(new FileExplorerTreeAdapter() {
+			@Override
+			public void fileExplorerTreeClickedFile(final FileExplorerTreeEvent event, final File aFile) {
+				if (aFile.isFile()) {
+					tabMain.addTab("Test1", new JPanel());
+				}
+			}
+		});
 
 		JScrollPane s = new JScrollPane(treeFile);
 		s.setBorder(null);
@@ -94,11 +106,18 @@ public class ToolBoxFrame extends JFrame {
 		splitSub.setTopComponent(tabMain);
 		splitSub.setBottomComponent(new JPanel());
 
+		ToolBox.getInstance().getServer().addMultiTaskServerListener(new MultiTaskServerAdapter() {
+			@Override
+			public void multiTaskServerStopped(final MultiTaskServerEvent event) {
+				doExit();
+			}
+		});
+		
 		// listener
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(final WindowEvent event) {
-				doExit();
+				ToolBox.getInstance().getServer().stop();
 			}
 		});
 		addComponentListener(new ComponentAdapter() {

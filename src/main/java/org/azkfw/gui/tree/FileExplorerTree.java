@@ -154,7 +154,9 @@ public class FileExplorerTree extends JTree {
 	 * @param aFile
 	 */
 	private void doOpenFile(final File aFile) {
-		System.out.println("open file.[" + aFile.getAbsolutePath() + "]");
+		for (FileExplorerTreeListener listener : listeners) {
+			listener.fileExplorerTreeClickedFile(listenerEvent, aFile);
+		}
 	}
 
 	private void doOpenChild(final FileExplorerTreeNode node) {
@@ -173,7 +175,7 @@ public class FileExplorerTree extends JTree {
 								break;
 							}
 						}
-						if (!cancel) {
+						if (cancel) {
 							lst.add(f);
 							for (FileExplorerTreeListener listener : listeners) {
 								listener.fileExplorerTreeAppendedFile(listenerEvent, f);

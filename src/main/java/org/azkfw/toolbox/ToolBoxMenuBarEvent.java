@@ -17,43 +17,11 @@
  */
 package org.azkfw.toolbox;
 
-import org.azkfw.business.task.Task;
-import org.azkfw.business.task.TaskServiceException;
-import org.azkfw.business.task.server.MultiTaskServer;
-
 /**
- * このクラスは、ツールボックスのメインクラスです。
- * 
  * @since 1.0.0
- * @version 1.0.0 2014/10/14
+ * @version 1.0.0 2014/10/15
  * @author Kawakicchi
  */
-public class ToolBox {
+public class ToolBoxMenuBarEvent {
 
-	/**
-	 * メイン関数
-	 * 
-	 * @param args 引数
-	 */
-	public static void main(final String[] args) {
-		ToolBoxFrame frm = new ToolBoxFrame();
-		frm.setVisible(true);
-	}
-
-	private static final ToolBox INSTANCE = new ToolBox();
-
-	private MultiTaskServer server;
-
-	private ToolBox() {
-		server = new MultiTaskServer();
-		server.start();
-	}
-
-	public static ToolBox getInstance() {
-		return INSTANCE;
-	}
-
-	public MultiTaskServer getServer() {
-		return server;
-	}
 }

@@ -26,7 +26,7 @@ import java.io.File;
  * @version 1.0.0 2014/10/14
  * @author kawakicchi
  */
-public class FileExplorerTreeAdapter implements FileExplorerTreeListener {
+public abstract class FileExplorerTreeAdapter implements FileExplorerTreeListener {
 
 	@Override
 	public void fileExplorerTreeClickedFile(final FileExplorerTreeEvent event, final File aFile) {

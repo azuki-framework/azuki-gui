@@ -52,9 +52,15 @@
 		<dependency>
 			<groupId>org.azkfw</groupId>
 			<artifactId>azuki-base</artifactId>
-			<version>1.2.0</version>
+			<version>1.4.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.azkfw</groupId>
+			<artifactId>azuki-business</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

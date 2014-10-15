@@ -21,12 +21,16 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+
+import org.azkfw.util.UUIDUtility;
 
 /**
  * @since 1.0.0
@@ -38,6 +42,12 @@ public class ToolBoxTabbedPane extends JTabbedPane {
 	/** serialVersionUID */
 	private static final long serialVersionUID = -4322039788436100986L;
 
+	private List<String> ids;
+
+	public ToolBoxTabbedPane() {
+		ids = new ArrayList<String>();
+	}
+
 	public void addTab(final String aTitle, final Component aPanel) {
 		addTab(aTitle, null, aPanel);
 	}
@@ -47,6 +57,8 @@ public class ToolBoxTabbedPane extends JTabbedPane {
 	}
 
 	public void addTab(final String aTitle, final Icon aIcon, final Component aPanel, final String aToolTip) {
+		String id = UUIDUtility.generateToShortString();
+
 		JPanel pnlTab = new JPanel();
 		pnlTab.setOpaque(false);
 		pnlTab.setLayout(new BorderLayout(5, 5));
@@ -60,18 +72,44 @@ public class ToolBoxTabbedPane extends JTabbedPane {
 		pnlTab.add(label, BorderLayout.CENTER);
 
 		ClassLoader cl = this.getClass().getClassLoader();
-		JLabel closeLabel = new JLabel(new ImageIcon(cl.getResource("org/azkfw/toolbox/icon_close.gif")));
+		TabCloseLabel closeLabel = new TabCloseLabel(id, new ImageIcon(cl.getResource("org/azkfw/toolbox/icon_close.gif")));
 		closeLabel.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(final MouseEvent event) {
-				System.out.println("cliek");
+				TabCloseLabel close = (TabCloseLabel) event.getSource();
+				for (int i = 0; i < ids.size(); i++) {
+					String id = ids.get(i);
+					if (id.equals(close.getId())) {
+						remove(i);
+						ids.remove(i);
+						break;
+					}
+				}
 			}
 		});
 		pnlTab.add(closeLabel, BorderLayout.EAST);
+		ids.add(id);
 
 		super.addTab(null, aPanel);
 		setTabComponentAt(getTabCount() - 1, pnlTab);
 		if (null != aToolTip) {
 			setToolTipTextAt(getTabCount() - 1, aToolTip);
+		}
+	}
+
+	private class TabCloseLabel extends JLabel {
+
+		/** serialVersionUID */
+		private static final long serialVersionUID = 3193755639540747912L;
+
+		private String id;
+
+		public TabCloseLabel(final String aId, final Icon aIcon) {
+			super(aIcon);
+			id = aId;
+		}
+
+		public String getId() {
+			return id;
 		}
 	}
 }
