@@ -67,7 +67,6 @@ public class ToolBoxFrame extends JFrame {
 		setJMenuBar(menuBar);
 
 		statusBar = new ToolBoxStatusBar();
-		statusBar.setBackground(Color.red);
 		getContentPane().add(statusBar);
 
 		splitMain = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);

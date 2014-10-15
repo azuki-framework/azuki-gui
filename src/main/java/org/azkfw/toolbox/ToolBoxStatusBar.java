@@ -18,6 +18,8 @@
 package org.azkfw.toolbox;
 
 import javax.swing.JPanel;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.SoftBevelBorder;
 
 /**
  * このクラスは、ツールボックスのステータスバークラスです。
@@ -32,6 +34,7 @@ public class ToolBoxStatusBar extends JPanel {
 	private static final long serialVersionUID = 4821036952893277070L;
 
 	public ToolBoxStatusBar() {
-		setSize(100, 32);
+		setSize(100, 24);
+		setBorder(new SoftBevelBorder(BevelBorder.LOWERED));
 	}
 }
