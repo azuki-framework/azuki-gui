@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
@@ -197,7 +199,9 @@ public class FileExplorerTree extends JTree {
 				menu.addSeparator();
 			}
 
-			JMenuItem menuRefresh = new JMenuItem("更新");
+			ClassLoader cl = this.getClass().getClassLoader();
+			Icon icon = new ImageIcon(cl.getResource("org/azkfw/gui/tree/FileExplorerTree_refresh.png"));
+			JMenuItem menuRefresh = new JMenuItem("更新", icon);
 			menu.add(menuRefresh);
 
 			menuRefresh.addActionListener(new ActionListener() {
