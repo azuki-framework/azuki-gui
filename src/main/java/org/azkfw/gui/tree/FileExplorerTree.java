@@ -17,6 +17,8 @@
  */
 package org.azkfw.gui.tree;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -86,7 +88,7 @@ public class FileExplorerTree extends JTree {
 						Object obj = getSelectionPath().getLastPathComponent();
 						if (obj instanceof FileExplorerFileTreeNode) {
 							FileExplorerFileTreeNode node = (FileExplorerFileTreeNode) obj;
-							JPopupMenu menu = createMenu(node.getFile());
+							JPopupMenu menu = createPopupMenu(node, node.getFile());
 							if (null != menu) {
 								menu.show(event.getComponent(), x, y);
 							}
@@ -145,7 +147,15 @@ public class FileExplorerTree extends JTree {
 	}
 
 	public void addFileExplorerTreeListener(final FileExplorerTreeListener listener) {
-		listeners.add(listener);
+		synchronized (listeners) {
+			listeners.add(listener);
+		}
+	}
+
+	public void removeFileExplorerTreeListener(final FileExplorerTreeListener listener) {
+		synchronized (listeners) {
+			listeners.remove(listener);
+		}
 	}
 
 	/**
@@ -154,64 +164,111 @@ public class FileExplorerTree extends JTree {
 	 * @param aFile
 	 */
 	private void doOpenFile(final File aFile) {
-		for (FileExplorerTreeListener listener : listeners) {
-			listener.fileExplorerTreeClickedFile(listenerEvent, aFile);
+		synchronized (listeners) {
+			for (FileExplorerTreeListener listener : listeners) {
+				try {
+					listener.fileExplorerTreeClickedFile(listenerEvent, aFile);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
 		}
+	}
+
+	private JPopupMenu createPopupMenu(final FileExplorerFileTreeNode aNode, final File aFile) {
+		JPopupMenu menu = new JPopupMenu();
+		synchronized (listeners) {
+			for (FileExplorerTreeListener listener : listeners) {
+				try {
+					List<JMenuItem> menuItems = listener.fileExplorerTreeMenuFile(listenerEvent, aFile);
+					if (null != menuItems) {
+						for (JMenuItem menuItem : menuItems) {
+							menu.add(menuItem);
+						}
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		}
+
+		if (aFile.isDirectory()) {
+			if (0 < menu.getComponentCount()) {
+				menu.addSeparator();
+			}
+
+			JMenuItem menuRefresh = new JMenuItem("更新");
+			menu.add(menuRefresh);
+
+			menuRefresh.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(final ActionEvent event) {
+					//System.out.println("menu : " + aNode.getName());
+
+					File[] files = aFile.listFiles();
+					refreshNode(aNode, files);
+				}
+			});
+		}
+
+		return menu;
+	}
+
+	private void refreshNode(final FileExplorerTreeNode aNode, final File[] aFiles) {
+		List<File> lst = new ArrayList<File>();
+
+		if (null != aFiles) {
+
+			synchronized (listeners) {
+				for (File f : aFiles) {
+					if (!f.isHidden()) {
+						boolean cancel = false;
+						try {
+							for (FileExplorerTreeListener listener : listeners) {
+								cancel = listener.fileExplorerTreeAppendingFile(listenerEvent, f);
+								if (!cancel) {
+									break;
+								}
+							}
+							if (cancel) {
+								lst.add(f);
+								for (FileExplorerTreeListener listener : listeners) {
+									listener.fileExplorerTreeAppendedFile(listenerEvent, f);
+								}
+							}
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
+					}
+				}
+			}
+
+			Collections.sort(lst, new Comparator<File>() {
+				public int compare(final File file1, final File file2) {
+					if (file1.isFile() != file2.isFile()) {
+						if (file1.isFile()) {
+							return 1;
+						} else {
+							return -1;
+						}
+					} else {
+						return file1.getName().compareTo(file2.getName());
+					}
+				}
+			});
+		} else {
+			// ファイル無
+		}
+
+		aNode.refreshNode(lst);
 	}
 
 	private void doOpenChild(final FileExplorerTreeNode node) {
 		if (!node.isOpened()) {
-			List<File> lst = new ArrayList<File>();
 			File file = getFile(node);
-
 			File[] files = file.listFiles();
-			if (null != files) {
-				for (File f : files) {
-					if (!f.isHidden()) {
-						boolean cancel = false;
-						for (FileExplorerTreeListener listener : listeners) {
-							cancel = listener.fileExplorerTreeAppendingFile(listenerEvent, f);
-							if (!cancel) {
-								break;
-							}
-						}
-						if (cancel) {
-							lst.add(f);
-							for (FileExplorerTreeListener listener : listeners) {
-								listener.fileExplorerTreeAppendedFile(listenerEvent, f);
-							}
-						}
-					}
-				}
-				Collections.sort(lst, new Comparator<File>() {
-					public int compare(final File file1, final File file2) {
-						if (file1.isFile() != file2.isFile()) {
-							if (file1.isFile()) {
-								return 1;
-							} else {
-								return -1;
-							}
-						} else {
-							return file1.getName().compareTo(file2.getName());
-						}
-					}
-				});
-			} else {
-				// ファイル無
-			}
-
-			node.refreshNode(lst);
+			refreshNode(node, files);
 		}
-	}
-
-	private JPopupMenu createMenu(final File aFile) {
-		JPopupMenu menu = new JPopupMenu();
-		if (aFile.isFile()) {
-			menu.add(new JMenuItem("File"));
-		} else {
-			menu.add(new JMenuItem("Directory"));
-		}
-		return menu;
 	}
 
 	private File getFile(FileExplorerTreeNode node) {
@@ -263,11 +320,13 @@ public class FileExplorerTree extends JTree {
 
 		public void refreshNode(final List<File> aFiles) {
 			openFlag = true;
-			removeAll();
+			removeAllChildren();
 			for (File f : aFiles) {
 				DefaultMutableTreeNode child = new FileExplorerFileTreeNode(f);
 				add(child);
 			}
+
+			((DefaultTreeModel) getModel()).reload(this);
 		}
 	}
 

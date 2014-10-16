@@ -18,9 +18,12 @@
 package org.azkfw.gui.tree;
 
 import java.io.File;
+import java.util.List;
+
+import javax.swing.JMenuItem;
 
 /**
- * このインターフェースは、ファイルエクスプローラツリーのリスナーインターフェースです。
+ * このインターフェースは、ファイルエクスプローラツリー用のリスナー機能を定義したインターフェースです。
  * 
  * @since 1.0.0
  * @version 1.0.0 2014/10/14
@@ -28,8 +31,30 @@ import java.io.File;
  */
 public interface FileExplorerTreeListener {
 
+	/**
+	 * ファイル・ディレクトでダブルクリック・Enterキー押下時に呼び出される。
+	 * 
+	 * @param event イベント
+	 * @param aFile ファイル
+	 */
 	public void fileExplorerTreeClickedFile(final FileExplorerTreeEvent event, final File aFile);
 
+	/**
+	 * ファイル・ディレクトリで右クリックした場合のコンテキストメニュー
+	 * 
+	 * @param event イベント
+	 * @param aFile ファイル
+	 * @return <code>null</code>の場合、コンテキストメニューにメニューは追加されない。
+	 */
+	public List<JMenuItem> fileExplorerTreeMenuFile(final FileExplorerTreeEvent event, final File aFile);
+
+	/**
+	 * ツリーの展開時にファイルごとに呼び出される。
+	 * 
+	 * @param event イベント
+	 * @param aFile　ファイル
+	 * @return <code>false</code>を指定した場合、ノードに追加されない。
+	 */
 	public boolean fileExplorerTreeAppendingFile(final FileExplorerTreeEvent event, final File aFile);
 
 	public void fileExplorerTreeAppendedFile(final FileExplorerTreeEvent event, final File aFile);

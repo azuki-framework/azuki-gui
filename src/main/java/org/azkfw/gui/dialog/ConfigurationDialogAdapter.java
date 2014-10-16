@@ -15,35 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.azkfw.gui.frame;
-
-import javax.swing.JFrame;
-
-import org.azkfw.gui.task.Task;
+package org.azkfw.gui.dialog;
 
 /**
- * このクラスは、設定ダイアログ画面です。
+ * このクラスは、設定ダイアログ画面用のリスナー機能を定義したアダプタークラスです。
  * 
  * @since 1.0.0
  * @version 1.0.0 2014/10/06
  * @author Kawakicchi
  */
-public abstract class TaskConfigurationDialog extends ConfigurationDialog {
+public abstract class ConfigurationDialogAdapter implements ConfigurationDialogListener {
 
-	/** serialVersionUID */
-	private static final long serialVersionUID = -8908616024008040757L;
+	@Override
+	public void configurationDialogOk(final ConfigurationDialogEvent event) {
 
-	private Task action;
-
-	public TaskConfigurationDialog(final JFrame frame) {
-		super(frame);
 	}
 
-	public void setTask(final Task aAction) {
-		action = aAction;
-	}
+	@Override
+	public void configurationDialogCancel(final ConfigurationDialogEvent event) {
 
-	public Task getTask() {
-		return action;
 	}
 }

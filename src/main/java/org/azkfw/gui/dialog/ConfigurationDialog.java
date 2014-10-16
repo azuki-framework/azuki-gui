@@ -15,9 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.azkfw.gui.frame;
+package org.azkfw.gui.dialog;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -70,44 +71,46 @@ public abstract class ConfigurationDialog extends JDialog {
 		setLayout(null);
 		setSize(400, 300);
 
+		listeners = new ArrayList<ConfigurationDialogListener>();
+
+		Container container = getContentPane();
+		
 		pnlClient = new JPanel();
 		pnlClient.setLayout(null);
-		getContentPane().add(pnlClient);
+		container.add(pnlClient);
 		pnlBorder = new JPanel();
 		pnlBorder.setBorder(new BevelBorder(BevelBorder.RAISED));
-		getContentPane().add(pnlBorder);
+		container.add(pnlBorder);
 
 		btnOk = new JButton("OK");
-		getContentPane().add(btnOk);
+		container.add(btnOk);
 		btnCancel = new JButton("キャンセル");
-		getContentPane().add(btnCancel);
+		container.add(btnCancel);
 
 		btnOk.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				doOk();
+				doClickButtonOk();
 			}
 		});
 		btnCancel.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				doCancel();
+				doClickButtonCancel();
 			}
 		});
 		addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(final ComponentEvent event) {
-				doResize();
+				doResizeDialog();
 			}
 		});
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(final WindowEvent event) {
-				doCancel();
+				doClickButtonCancel();
 			}
 		});
-
-		listeners = new ArrayList<ConfigurationDialogListener>();
 	}
 
 	@Override
@@ -115,46 +118,95 @@ public abstract class ConfigurationDialog extends JDialog {
 		return pnlClient.add(comp);
 	}
 
-	public void addConfigurationDialogListener(final ConfigurationDialogListener listener) {
-		listeners.add(listener);
+	/**
+	 * 設定ダイアログへリスナーを登録する。
+	 * 
+	 * @param listener リスナー
+	 */
+	public final void addConfigurationDialogListener(final ConfigurationDialogListener listener) {
+		synchronized (listeners) {
+			listeners.add(listener);
+		}
 	}
 
-	public final void setClientSize(final int aWidth, final int aHeight) {
+	/**
+	 * 設定ダイアログからリスナーを削除する。
+	 * 
+	 * @param listener
+	 */
+	public final void removeConfigurationDialogListener(final ConfigurationDialogListener listener) {
+		synchronized (listeners) {
+			listeners.remove(listener);
+		}
+	}
+
+	/**
+	 * クライアントサイズを設定する。
+	 * <p>
+	 * クライアントサイズを元にダイアログサイズを設定する。
+	 * </p>
+	 * 
+	 * @param aWidth 横幅
+	 * @param aHeight　縦幅
+	 */
+	public final void setClientPanelSize(final int aWidth, final int aHeight) {
 		Insets insets = getInsets();
 		setSize(aWidth - (insets.left + insets.left), aHeight - (insets.top + insets.bottom));
 	}
 
-	protected boolean onClickOK() {
+	/**
+	 * OKボタンが押下された時の処理。
+	 * 
+	 * @return <code>false</code>で処理を中断
+	 */
+	protected boolean doClickOK() {
 		return true;
 	}
 
-	protected boolean onClickCancel() {
+	/**
+	 * Cancelボタンが押下された時の処理。
+	 * 
+	 * @return <code>false</code>で処理を中断
+	 */
+	protected boolean doClickCancel() {
 		return true;
 	}
 
-	private void doOk() {
-		if (onClickOK()) {
+	private void doClickButtonOk() {
+		if (doClickOK()) {
 			ConfigurationDialogEvent event = new ConfigurationDialogEvent(this);
-			for (ConfigurationDialogListener listener : listeners) {
-				listener.configurationDialogOk(event);
+			synchronized (listeners) {
+				for (ConfigurationDialogListener listener : listeners) {
+					try {
+						listener.configurationDialogOk(event);
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
 			}
 			setVisible(false);
 			dispose();
 		}
 	}
 
-	private void doCancel() {
-		if (onClickCancel()) {
+	private void doClickButtonCancel() {
+		if (doClickCancel()) {
 			ConfigurationDialogEvent event = new ConfigurationDialogEvent(this);
-			for (ConfigurationDialogListener listener : listeners) {
-				listener.configurationDialogCancel(event);
+			synchronized (listeners) {
+				for (ConfigurationDialogListener listener : listeners) {
+					try {
+						listener.configurationDialogCancel(event);
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				}
 			}
 			setVisible(false);
 			dispose();
 		}
 	}
 
-	private void doResize() {
+	private void doResizeDialog() {
 		Insets insets = getInsets();
 		int width = getWidth() - (insets.left + insets.right);
 		int height = getHeight() - (insets.top + insets.bottom);

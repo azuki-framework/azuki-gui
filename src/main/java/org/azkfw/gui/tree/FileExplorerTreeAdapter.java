@@ -18,9 +18,12 @@
 package org.azkfw.gui.tree;
 
 import java.io.File;
+import java.util.List;
+
+import javax.swing.JMenuItem;
 
 /**
- * このクラスは、ファイルエクスプローラツリーのリスナークラスです。
+ * このクラスは、ファイルエクスプローラツリー用のリスナー機能を定義したアダプタ―クラスです。
  * 
  * @since 1.0.0
  * @version 1.0.0 2014/10/14
@@ -31,6 +34,11 @@ public abstract class FileExplorerTreeAdapter implements FileExplorerTreeListene
 	@Override
 	public void fileExplorerTreeClickedFile(final FileExplorerTreeEvent event, final File aFile) {
 
+	}
+
+	@Override
+	public List<JMenuItem> fileExplorerTreeMenuFile(final FileExplorerTreeEvent event, final File aFile) {
+		return null;
 	}
 
 	@Override

@@ -15,21 +15,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.azkfw.gui.task;
+package org.azkfw.gui.dialog;
 
 /**
- * このインターフェースは、プログレスリスナー機能を定義したインターフェースです。
+ * このクラスは、設定ダイアログ画面用のイベント情報を保持したクラスです。
  * 
  * @since 1.0.0
- * @version 1.0.0 2014/10/07
+ * @version 1.0.0 2014/10/09
  * @author Kawakicchi
  */
-public interface TaskProgressListener {
+public class ConfigurationDialogEvent {
+
+	/** configuration dialog */
+	private ConfigurationDialog dialog;
 
 	/**
-	 * 進捗イベント
+	 * コンストラクタ
 	 * 
-	 * @param event イベント情報
+	 * @param aDialog 設定ダイアログ
 	 */
-	public void progress(final TaskProgressEvent event);
+	public ConfigurationDialogEvent(final ConfigurationDialog aDialog) {
+		dialog = aDialog;
+	}
+
+	/**
+	 * 設定ダイアログを取得する。
+	 * 
+	 * @return ダイアログ
+	 */
+	public ConfigurationDialog getDialog() {
+		return dialog;
+	}
 }

@@ -15,45 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.azkfw.gui.task;
+package org.azkfw.gui.dialog;
 
 /**
- * このインターフェースは、タスク機能を定義するインターフェースです。
+ * このインターフェースは、設定ダイアログ画面用のリスナー機能を定義したインタフェースです。
  * 
  * @since 1.0.0
  * @version 1.0.0 2014/10/06
  * @author Kawakicchi
  */
-public interface Task {
+public interface ConfigurationDialogListener {
 
-	/**
-	 * タスク名を取得する。
-	 * 
-	 * @return タスク名
-	 */
-	public String getName();
+	public void configurationDialogOk(final ConfigurationDialogEvent event);
 
-	/**
-	 * 初期化処理
-	 */
-	public void initialize();
-
-	/**
-	 * タスク処理
-	 * 
-	 * @return 結果
-	 */
-	public TaskResult execute();
-
-	/**
-	 * 解放処理
-	 */
-	public void destory();
-
-	/**
-	 * リスナーを追加する。
-	 * 
-	 * @param listener リスナー
-	 */
-	public void addTaskListener(final TaskListener listener);
+	public void configurationDialogCancel(final ConfigurationDialogEvent event);
 }
