@@ -78,7 +78,7 @@ public class CustomTable extends JTable {
 
 		/** serialVersionUID */
 		private static final long serialVersionUID = -4569629400750347234L;
-		
+
 		protected JComponent c = null;
 
 		// このコンポーネントをインスタンス変数に保管しておき、

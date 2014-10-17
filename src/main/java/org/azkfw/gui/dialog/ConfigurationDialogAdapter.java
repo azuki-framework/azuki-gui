@@ -27,12 +27,12 @@ package org.azkfw.gui.dialog;
 public abstract class ConfigurationDialogAdapter implements ConfigurationDialogListener {
 
 	@Override
-	public void configurationDialogOk(final ConfigurationDialogEvent event) {
+	public void configurationDialogOk(final ConfigurationDialogEvent event, final Object data) {
 
 	}
 
 	@Override
-	public void configurationDialogCancel(final ConfigurationDialogEvent event) {
+	public void configurationDialogCancel(final ConfigurationDialogEvent event, final Object data) {
 
 	}
 }

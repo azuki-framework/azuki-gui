@@ -19,6 +19,7 @@ package org.azkfw.gui.dialog;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Frame;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,7 +32,6 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 
@@ -46,6 +46,9 @@ public abstract class ConfigurationDialog extends JDialog {
 
 	/** serialVersionUID */
 	private static final long serialVersionUID = 4046832570158320828L;
+
+	/** data object */
+	private Object data;
 
 	/** listener */
 	private List<ConfigurationDialogListener> listeners;
@@ -63,18 +66,20 @@ public abstract class ConfigurationDialog extends JDialog {
 	/**
 	 * コンストラクタ
 	 * 
-	 * @param frame Frame
+	 * @param aFrame Frame
+	 * @param aData Data
 	 */
-	public ConfigurationDialog(final JFrame frame) {
-		super(frame);
+	public ConfigurationDialog(final Frame aFrame, final Object aData) {
+		super(aFrame);
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		setLayout(null);
 		setSize(400, 300);
 
+		data = aData;
 		listeners = new ArrayList<ConfigurationDialogListener>();
 
 		Container container = getContentPane();
-		
+
 		pnlClient = new JPanel();
 		pnlClient.setLayout(null);
 		container.add(pnlClient);
@@ -114,8 +119,22 @@ public abstract class ConfigurationDialog extends JDialog {
 	}
 
 	@Override
-	public final Component add(Component comp) {
+	public final Component add(final Component comp) {
 		return pnlClient.add(comp);
+	}
+
+	@Override
+	public final int getComponentCount() {
+		return pnlClient.getComponentCount();
+	}
+
+	@Override
+	public final Component getComponent(final int index) {
+		return pnlClient.getComponent(index);
+	}
+
+	protected final JPanel getClientPanel() {
+		return pnlClient;
 	}
 
 	/**
@@ -155,22 +174,27 @@ public abstract class ConfigurationDialog extends JDialog {
 	}
 
 	/**
+	 * データを取得する。
+	 * 
+	 * @return データ
+	 */
+	protected final Object getData() {
+		return data;
+	}
+
+	/**
 	 * OKボタンが押下された時の処理。
 	 * 
 	 * @return <code>false</code>で処理を中断
 	 */
-	protected boolean doClickOK() {
-		return true;
-	}
+	protected abstract boolean doClickOK();
 
 	/**
 	 * Cancelボタンが押下された時の処理。
 	 * 
 	 * @return <code>false</code>で処理を中断
 	 */
-	protected boolean doClickCancel() {
-		return true;
-	}
+	protected abstract boolean doClickCancel();
 
 	private void doClickButtonOk() {
 		if (doClickOK()) {
@@ -178,7 +202,7 @@ public abstract class ConfigurationDialog extends JDialog {
 			synchronized (listeners) {
 				for (ConfigurationDialogListener listener : listeners) {
 					try {
-						listener.configurationDialogOk(event);
+						listener.configurationDialogOk(event, data);
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}
@@ -195,7 +219,7 @@ public abstract class ConfigurationDialog extends JDialog {
 			synchronized (listeners) {
 				for (ConfigurationDialogListener listener : listeners) {
 					try {
-						listener.configurationDialogCancel(event);
+						listener.configurationDialogCancel(event, data);
 					} catch (Exception ex) {
 						ex.printStackTrace();
 					}

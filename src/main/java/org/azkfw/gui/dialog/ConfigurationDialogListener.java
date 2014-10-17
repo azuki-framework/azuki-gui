@@ -26,7 +26,7 @@ package org.azkfw.gui.dialog;
  */
 public interface ConfigurationDialogListener {
 
-	public void configurationDialogOk(final ConfigurationDialogEvent event);
+	public void configurationDialogOk(final ConfigurationDialogEvent event, final Object data);
 
-	public void configurationDialogCancel(final ConfigurationDialogEvent event);
+	public void configurationDialogCancel(final ConfigurationDialogEvent event, final Object data);
 }
