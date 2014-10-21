@@ -183,6 +183,13 @@ public abstract class ConfigurationDialog extends JDialog {
 	}
 
 	/**
+	 * バリデーション処理。
+	 * 
+	 * @return <code>true</code>で成功
+	 */
+	protected abstract boolean isValidate();
+
+	/**
 	 * OKボタンが押下された時の処理。
 	 * 
 	 * @return <code>false</code>で処理を中断
@@ -197,19 +204,21 @@ public abstract class ConfigurationDialog extends JDialog {
 	protected abstract boolean doClickCancel();
 
 	private void doClickButtonOk() {
-		if (doClickOK()) {
-			ConfigurationDialogEvent event = new ConfigurationDialogEvent(this);
-			synchronized (listeners) {
-				for (ConfigurationDialogListener listener : listeners) {
-					try {
-						listener.configurationDialogOk(event, data);
-					} catch (Exception ex) {
-						ex.printStackTrace();
+		if (isValidate()) {
+			if (doClickOK()) {
+				ConfigurationDialogEvent event = new ConfigurationDialogEvent(this);
+				synchronized (listeners) {
+					for (ConfigurationDialogListener listener : listeners) {
+						try {
+							listener.configurationDialogOk(event, data);
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
 					}
 				}
+				setVisible(false);
+				dispose();
 			}
-			setVisible(false);
-			dispose();
 		}
 	}
 
