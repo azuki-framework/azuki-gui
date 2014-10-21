@@ -34,6 +34,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
+import javax.swing.border.SoftBevelBorder;
 
 /**
  * このクラスは、設定ダイアログ画面を実装する為の基底クラスです。
@@ -46,6 +47,9 @@ public abstract class ConfigurationDialog extends JDialog {
 
 	/** serialVersionUID */
 	private static final long serialVersionUID = 4046832570158320828L;
+
+	private static final int DEFAULT_BUTTON_WIDTH = 120;
+	private static final int DEFAULT_BUTTON_HEIGHT = 24;
 
 	/** data object */
 	private Object data;
@@ -84,12 +88,14 @@ public abstract class ConfigurationDialog extends JDialog {
 		pnlClient.setLayout(null);
 		container.add(pnlClient);
 		pnlBorder = new JPanel();
-		pnlBorder.setBorder(new BevelBorder(BevelBorder.RAISED));
+		pnlBorder.setBorder(new SoftBevelBorder(BevelBorder.RAISED));
 		container.add(pnlBorder);
 
 		btnOk = new JButton("OK");
+		btnOk.setSize(DEFAULT_BUTTON_WIDTH, DEFAULT_BUTTON_HEIGHT);
 		container.add(btnOk);
 		btnCancel = new JButton("キャンセル");
+		btnCancel.setSize(DEFAULT_BUTTON_WIDTH, DEFAULT_BUTTON_HEIGHT);
 		container.add(btnCancel);
 
 		btnOk.addActionListener(new ActionListener() {
@@ -244,9 +250,9 @@ public abstract class ConfigurationDialog extends JDialog {
 		int width = getWidth() - (insets.left + insets.right);
 		int height = getHeight() - (insets.top + insets.bottom);
 
-		pnlClient.setBounds(0, 0, width, height - 50);
-		pnlBorder.setBounds(-2, height - 50, width + 4, 3);
-		btnOk.setBounds(width - (120 + 10) * 2, height - 40, 120, 32);
-		btnCancel.setBounds(width - (120 + 10) * 1, height - 40, 120, 32);
+		pnlClient.setBounds(0, 0, width, height - (5 + DEFAULT_BUTTON_HEIGHT + 10 + 3));
+		pnlBorder.setBounds(-2, height - (5 + DEFAULT_BUTTON_HEIGHT + 10 + 3), width + 4, 3);
+		btnOk.setLocation(width - (DEFAULT_BUTTON_WIDTH + 10) * 2, height - (DEFAULT_BUTTON_HEIGHT + 10));
+		btnCancel.setLocation(width - (DEFAULT_BUTTON_WIDTH + 10) * 1, height - (DEFAULT_BUTTON_HEIGHT + 10));
 	}
 }

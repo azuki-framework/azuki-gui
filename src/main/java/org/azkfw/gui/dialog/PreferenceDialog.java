@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -45,6 +44,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -60,6 +60,10 @@ public class PreferenceDialog extends JDialog {
 	/** serialVersionUID */
 	private static final long serialVersionUID = 4722800289396390658L;
 
+	private static final int DEFAULT_TITLE_HEIGHT = 40;
+	private static final int DEFAULT_BUTTON_WIDTH = 120;
+	private static final int DEFAULT_BUTTON_HEIGHT = 24;
+
 	private JTree tree;
 	private JPanel pnlRight;
 	private JSplitPane splitPanel;
@@ -72,75 +76,7 @@ public class PreferenceDialog extends JDialog {
 
 	private PreferenceData data;
 
-	private class PreferenceData {
-		private String id;
-		private String title;
-
-		private JComponent component;
-
-		private List<PreferenceData> children;
-
-		/**
-		 * コンストラクタ
-		 * <p>
-		 * 仮作成の場合などに使用
-		 * </p>
-		 * 
-		 * @param aId
-		 */
-		public PreferenceData(final String aId) {
-			id = aId;
-			title = null;
-			component = null;
-			children = new ArrayList<PreferenceData>();
-		}
-
-		/**
-		 * コンストラクタ
-		 * <p>
-		 * 作成時に使用
-		 * </p>
-		 * 
-		 * @param aId
-		 * @param aTitle
-		 * @param aComponent
-		 */
-		public PreferenceData(final String aId, final String aTitle, final JComponent aComponent) {
-			id = aId;
-			title = aTitle;
-			component = aComponent;
-			children = new ArrayList<PreferenceData>();
-		}
-
-		public void set(final String aTitle, final JComponent aComponent) {
-			title = aTitle;
-			component = aComponent;
-		}
-
-		public String getId() {
-			return id;
-		}
-
-		public String getTitle() {
-			return title;
-		}
-
-		public JComponent getComponent() {
-			return component;
-		}
-
-		public List<PreferenceData> getChildren() {
-			return children;
-		}
-
-		public void add(PreferenceData data) {
-			children.add(data);
-		}
-
-		public String toString() {
-			return title;
-		}
-	}
+	private List<PreferenceDialogListener> listeners;
 
 	/**
 	 * コンストラクタ
@@ -238,8 +174,11 @@ public class PreferenceDialog extends JDialog {
 		init();
 	}
 
+	public final void addPreferenceDialogListener(final PreferenceDialogListener listener) {
+		listeners.add(listener);
+	}
+
 	private DefaultMutableTreeNode createNode(final PreferenceData aData) {
-		// test
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode(aData);
 		node(root, aData.getChildren());
 		return root;
@@ -255,12 +194,12 @@ public class PreferenceDialog extends JDialog {
 		}
 	}
 
-	private boolean addNode(final String aPath, final String aTitle, final JComponent aComponent) {
+	private boolean addNode(final String aPath, final String aTitle, final PreferenceClientPanel aClientPanel) {
 		String[] ids = aPath.split("/");
-		return addNode(ids, aTitle, aComponent);
+		return addNode(ids, aTitle, aClientPanel);
 	}
 
-	private boolean addNode(final String[] ids, final String aTitle, final JComponent aComponent) {
+	private boolean addNode(final String[] ids, final String aTitle, final PreferenceClientPanel aClientPanel) {
 		List<String> list = new ArrayList<String>();
 		for (String id : ids) {
 			list.add(id);
@@ -268,11 +207,11 @@ public class PreferenceDialog extends JDialog {
 
 		list.remove(0);
 
-		addNode(aTitle, aComponent, data, list);
+		addNode(aTitle, aClientPanel, data, list);
 		return true;
 	}
 
-	private void addNode(final String aTitle, final JComponent aComponent, PreferenceData parent, List<String> ids) {
+	private void addNode(final String aTitle, final PreferenceClientPanel aClientPanel, final PreferenceData parent, final List<String> ids) {
 		String id = ids.get(0);
 
 		PreferenceData target = null;
@@ -285,15 +224,15 @@ public class PreferenceDialog extends JDialog {
 
 		if (1 == ids.size()) {
 			if (null == target) { // 最後でかつ未作成				
-				target = new PreferenceData(id, aTitle, aComponent);
+				target = new PreferenceData(id, aTitle, aClientPanel);
 				parent.add(target);
 			} else { // 最後でかつ作成済み
-				if (null != target.getTitle() || null != target.getComponent()) {
+				if (null != target.getTitle() || null != target.getClientPanel()) {
 					// err
 					System.out.println("重複");
 					return;
 				}
-				target.set(aTitle, aComponent);
+				target.set(aTitle, aClientPanel);
 			}
 		} else { // 途中のツリー
 			if (null == target) {
@@ -301,11 +240,173 @@ public class PreferenceDialog extends JDialog {
 				parent.add(target);
 			}
 			ids.remove(0);
-			addNode(aTitle, aComponent, target, ids);
+			addNode(aTitle, aClientPanel, target, ids);
 		}
 	}
 
-	private class TestPanel extends JPanel {
+	private void init() {
+		setLayout(null);
+		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+
+		data = new PreferenceData("", "", null);
+		listeners = new ArrayList<PreferenceDialogListener>();
+
+		tree = new JTree();
+		tree.setRootVisible(false);
+		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+		JScrollPane treeScrollPanel = new JScrollPane();
+		treeScrollPanel.setViewportView(tree);
+
+		pnlTitle = new TitlePanel();
+		pnlTitle.setLocation(0, 0);
+
+		pnlClient = new JPanel();
+		pnlClient.setLayout(null);
+		pnlClient.setLocation(0, 40);
+		pnlClient.add(new TestPanel());
+
+		pnlRight = new JPanel();
+		pnlRight.setLayout(null);
+		pnlRight.add(pnlTitle);
+		pnlRight.add(pnlClient);
+
+		splitPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true);
+		splitPanel.setLocation(0, 0);
+		splitPanel.setDividerLocation(160);
+		splitPanel.setDividerSize(6);
+
+		btnOk = new JButton("OK");
+		btnOk.setSize(DEFAULT_BUTTON_WIDTH, DEFAULT_BUTTON_HEIGHT);
+		btnCancel = new JButton("キャンセル");
+		btnCancel.setSize(DEFAULT_BUTTON_WIDTH, DEFAULT_BUTTON_HEIGHT);
+
+		splitPanel.setLeftComponent(treeScrollPanel);
+		splitPanel.setRightComponent(pnlRight);
+
+		add(splitPanel);
+		add(btnOk);
+		add(btnCancel);
+
+		pnlRight.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(final ComponentEvent event) {
+				int width = pnlRight.getWidth();
+				int height = pnlRight.getHeight();
+				pnlTitle.setSize(width, DEFAULT_TITLE_HEIGHT);
+				pnlClient.setSize(width, height - DEFAULT_TITLE_HEIGHT);
+
+				if (0 < pnlClient.getComponentCount()) {
+					System.out.println("change component");
+					Component c = pnlClient.getComponent(0);
+					c.setBounds(0, 0, width, height - DEFAULT_TITLE_HEIGHT);
+				}
+			}
+		});
+		btnOk.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				onClickOkButton();
+			}
+		});
+		btnCancel.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				onClickCancelButton();
+			}
+		});
+		tree.addTreeSelectionListener(new TreeSelectionListener() {
+			@Override
+			public void valueChanged(TreeSelectionEvent e) {
+				TreePath[] ps = e.getPaths();
+				for (int i = 0; i < ps.length; i++) {
+					boolean add = e.isAddedPath(i);
+
+					TreePath tp = ps[i];
+					DefaultMutableTreeNode aa = (DefaultMutableTreeNode) tp.getLastPathComponent();
+					PreferenceData dd = (PreferenceData) aa.getUserObject();
+					if (add) {
+						pnlClient.removeAll();
+
+						PreferenceClientPanel component = dd.getClientPanel();
+						if (null != component) {
+							pnlClient.add(component);
+							component.setSize(pnlClient.getSize());
+						}
+						pnlClient.invalidate();
+						pnlClient.validate();
+						pnlClient.repaint();
+
+						pnlTitle.setTitle(dd.getTitle());
+					}
+				}
+			}
+		});
+
+		addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(final ComponentEvent event) {
+				doComponentResized();
+			}
+		});
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowOpened(final WindowEvent event) {
+				doWindowOpened();
+			}
+
+			@Override
+			public void windowClosing(final WindowEvent event) {
+				onClickCancelButton();
+			}
+		});
+
+		setSize(800, 400);
+	}
+
+	private void onClickOkButton() {
+
+	}
+
+	private void onClickCancelButton() {
+		setVisible(false);
+		dispose();
+	}
+
+	private void doComponentResized() {
+		Insets insets = getInsets();
+
+		int width = getWidth() - (insets.left + insets.right);
+		int height = getHeight() - (insets.top + insets.bottom);
+
+		splitPanel.setSize(width, height - (5 + DEFAULT_BUTTON_HEIGHT + 10));
+		btnOk.setLocation(width - (DEFAULT_BUTTON_WIDTH + 10) * 2, height - (DEFAULT_BUTTON_HEIGHT + 10));
+		btnCancel.setLocation(width - (DEFAULT_BUTTON_WIDTH + 10) * 1, height - (DEFAULT_BUTTON_HEIGHT + 10));
+	}
+
+	/**
+	 * 
+	 * @param aPath /aaa/bbb
+	 * @param aTitle
+	 * @param aPanel
+	 */
+	public void addPreference(final String aPath, final String aTitle, final PreferenceClientPanel aPanel) {
+		addNode(aPath, aTitle, aPanel);
+	}
+
+	private void doWindowOpened() {
+		DefaultMutableTreeNode root = createNode(data);
+		DefaultTreeModel model = new DefaultTreeModel(root);
+		tree.setModel(model);
+
+		Container parent = getParent();
+		if (null != parent) {
+			int x = parent.getX() + (parent.getWidth() - getWidth()) / 2;
+			int y = parent.getY() + (parent.getHeight() - getHeight()) / 2;
+			setLocation(x, y);
+		}
+	}
+
+	private class TestPanel extends PreferenceClientPanel {
 
 		/** serialVersionUID */
 		private static final long serialVersionUID = -8475543665402763379L;
@@ -342,156 +443,6 @@ public class PreferenceDialog extends JDialog {
 					scroll.setSize(getSize());
 				}
 			});
-		}
-	}
-
-	private void init() {
-		setLayout(null);
-
-		data = new PreferenceData("", "", null);
-		addNode("/aaa/bbb/ccc", "CCC", new JButton("button"));
-		addNode("/aaa/bbb", "BBB", new TestPanel());
-		addNode("/aaa", "AAA", new TestPanel());
-		addNode("/bbb", "BBB", new TestPanel());
-		addNode("/bbb/1", "BBB1", null);
-		addNode("/bbb/2", "BBB2", null);
-
-		DefaultMutableTreeNode root = createNode(data);
-
-		tree = new JTree(root);
-		tree.setRootVisible(false);
-		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-		JScrollPane treeScrollPanel = new JScrollPane();
-		treeScrollPanel.setViewportView(tree);
-
-		pnlTitle = new TitlePanel();
-		pnlTitle.setLocation(0, 0);
-
-		pnlClient = new JPanel();
-		pnlClient.setLayout(null);
-		pnlClient.setLocation(0, 40);
-		pnlClient.setBackground(Color.blue);
-		pnlClient.add(new TestPanel());
-
-		pnlRight = new JPanel();
-		pnlRight.setBackground(Color.green);
-		pnlRight.setLayout(null);
-		pnlRight.add(pnlTitle);
-		pnlRight.add(pnlClient);
-
-		splitPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true);
-		splitPanel.setLocation(0, 0);
-		splitPanel.setDividerLocation(160);
-		splitPanel.setDividerSize(6);
-
-		btnOk = new JButton("OK");
-		btnOk.setSize(160, 32);
-		btnCancel = new JButton("キャンセル");
-		btnCancel.setSize(160, 32);
-
-		splitPanel.setLeftComponent(treeScrollPanel);
-		splitPanel.setRightComponent(pnlRight);
-
-		add(splitPanel);
-		add(btnOk);
-		add(btnCancel);
-
-		pnlRight.addComponentListener(new ComponentAdapter() {
-			@Override
-			public void componentResized(final ComponentEvent event) {
-				int width = pnlRight.getWidth();
-				int height = pnlRight.getHeight();
-				pnlTitle.setSize(width, 40);
-				pnlClient.setSize(width, height - 40);
-
-				if (0 < pnlClient.getComponentCount()) {
-					System.out.println("change component");
-					Component c = pnlClient.getComponent(0);
-					c.setBounds(0, 0, width, height - 40);
-				}
-			}
-		});
-		btnOk.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				onClickOkButton();
-			}
-		});
-		btnCancel.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				onClickCancelButton();
-			}
-		});
-		tree.addTreeSelectionListener(new TreeSelectionListener() {
-			@Override
-			public void valueChanged(TreeSelectionEvent e) {
-				TreePath[] ps = e.getPaths();
-				for (int i = 0; i < ps.length; i++) {
-					boolean add = e.isAddedPath(i);
-
-					TreePath tp = ps[i];
-					DefaultMutableTreeNode aa = (DefaultMutableTreeNode) tp.getLastPathComponent();
-					PreferenceData dd = (PreferenceData) aa.getUserObject();
-					if (add) {
-						pnlClient.removeAll();
-
-						JComponent component = dd.getComponent();
-						if (null != component) {
-							pnlClient.add(component);
-							component.setSize(pnlClient.getSize());
-						}
-						pnlClient.invalidate();
-						pnlClient.validate();
-						pnlClient.repaint();
-
-						pnlTitle.setTitle(dd.getTitle());
-					}
-				}
-			}
-		});
-
-		addComponentListener(new ComponentAdapter() {
-			@Override
-			public void componentResized(final ComponentEvent event) {
-				doComponentResized();
-			}
-		});
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowOpened(final WindowEvent event) {
-				doWindowOpened();
-			}
-		});
-
-		setSize(800, 400);
-	}
-
-	private void onClickOkButton() {
-
-	}
-
-	private void onClickCancelButton() {
-
-	}
-
-	private void doComponentResized() {
-		Insets insets = getInsets();
-
-		int width = getWidth() - (insets.left + insets.right);
-		int height = getHeight() - (insets.top + insets.bottom);
-
-		splitPanel.setSize(width, height - (5 + 32 + 10));
-		btnOk.setLocation(width - (160 + 10) * 2, height - (32 + 10));
-		btnCancel.setLocation(width - (160 + 10) * 1, height - (32 + 10));
-	}
-
-	private void doWindowOpened() {
-		Container parent = getParent();
-		if (null != parent) {
-			int x = parent.getX() + (parent.getWidth() - getWidth()) / 2;
-			int y = parent.getY() + (parent.getHeight() - getHeight()) / 2;
-			setLocation(x, y);
 		}
 	}
 
@@ -533,5 +484,75 @@ public class PreferenceDialog extends JDialog {
 			lblTitle.setText(aTitle);
 		}
 
+	}
+
+	private class PreferenceData {
+		private String id;
+		private String title;
+
+		private PreferenceClientPanel pnlClient;
+
+		private List<PreferenceData> children;
+
+		/**
+		 * コンストラクタ
+		 * <p>
+		 * 仮作成の場合などに使用
+		 * </p>
+		 * 
+		 * @param aId
+		 */
+		public PreferenceData(final String aId) {
+			id = aId;
+			title = null;
+			pnlClient = null;
+			children = new ArrayList<PreferenceData>();
+		}
+
+		/**
+		 * コンストラクタ
+		 * <p>
+		 * 作成時に使用
+		 * </p>
+		 * 
+		 * @param aId
+		 * @param aTitle
+		 * @param aComponent
+		 */
+		public PreferenceData(final String aId, final String aTitle, final PreferenceClientPanel aClientPanel) {
+			id = aId;
+			title = aTitle;
+			pnlClient = aClientPanel;
+			children = new ArrayList<PreferenceData>();
+		}
+
+		public void set(final String aTitle, final PreferenceClientPanel aClientPanel) {
+			title = aTitle;
+			pnlClient = aClientPanel;
+		}
+
+		public String getId() {
+			return id;
+		}
+
+		public String getTitle() {
+			return title;
+		}
+
+		public PreferenceClientPanel getClientPanel() {
+			return pnlClient;
+		}
+
+		public List<PreferenceData> getChildren() {
+			return children;
+		}
+
+		public void add(PreferenceData data) {
+			children.add(data);
+		}
+
+		public String toString() {
+			return title;
+		}
 	}
 }
