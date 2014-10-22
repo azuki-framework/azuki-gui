@@ -23,6 +23,8 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.JTextField;
 
+import org.azkfw.gui.validate.ValidationSupport;
+
 /**
  * このクラスは、バリデーション機能を定義する為のテキストフィールドクラスです。
  * 
@@ -30,7 +32,7 @@ import javax.swing.JTextField;
  * @version 1.0.0 2014/10/21
  * @author kawakicchi
  */
-public abstract class ValidationTextField extends JTextField {
+public abstract class ValidationTextField extends JTextField implements ValidationSupport {
 
 	/** serialVersionUID */
 	private static final long serialVersionUID = -5301369499632815079L;
@@ -69,10 +71,4 @@ public abstract class ValidationTextField extends JTextField {
 		}
 	}
 
-	/**
-	 * バリデーション結果を判断する。
-	 * 
-	 * @return 判断
-	 */
-	public abstract boolean isValidate();
 }

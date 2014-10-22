@@ -18,26 +18,25 @@
 package org.azkfw.gui.component.textfield;
 
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
- * このクラスは、Double型のテキストフィールドを実装したクラスです。
+ * このクラスは、パターン型のテキストフィールドを実装したクラスです。
  * 
  * @since 1.0.0
- * @version 1.0.0 2014/10/21
+ * @version 1.0.0 2014/10/22
  * @author kawakicchi
  */
-public class DoubleTextField extends NumberTextField {
+public class PatternTextField extends ValidationTextField {
 
 	/** serialVersionUID */
-	private static final long serialVersionUID = -1685436081172055961L;
-
-	private static final Pattern PATTERN = Pattern.compile("^(|-{0,1}[0-9]+(\\.[0-9]*){0,1})$");
+	private static final long serialVersionUID = -7190798779491694031L;
 
 	/**
 	 * コンストラクタ
 	 */
-	public DoubleTextField() {
-		this((Double) null);
+	public PatternTextField() {
+		this(null);
 	}
 
 	/**
@@ -45,19 +44,11 @@ public class DoubleTextField extends NumberTextField {
 	 * 
 	 * @param value
 	 */
-	public DoubleTextField(final Integer value) {
-		this((null != value) ? value.doubleValue() : null);
-	}
-
-	/**
-	 * コンストラクタ
-	 * 
-	 * @param value
-	 */
-	public DoubleTextField(final Double value) {
+	public PatternTextField(final Pattern value) {
 		super();
+
 		if (null != value) {
-			setText(Double.toString(value));
+			setText(value.pattern());
 		} else {
 			setText("");
 		}
@@ -68,18 +59,27 @@ public class DoubleTextField extends NumberTextField {
 	 * 
 	 * @return 値
 	 */
-	public Double getValue() {
-		Double value = null;
+	public Pattern getValue() {
+		Pattern value = null;
 		try {
-			value = Double.parseDouble(getText());
-		} catch (NumberFormatException ex) {
-			ex.printStackTrace();
+			if (0 < getText().length()) {
+				value = Pattern.compile(getText());
+			}
+		} catch (PatternSyntaxException ex) {
 		}
 		return value;
 	}
 
 	@Override
 	public boolean isValidate() {
-		return PATTERN.matcher(getText()).matches();
+		boolean validate = false;
+		try {
+			if (0 < getText().length()) {
+				Pattern.compile(getText());
+			}
+			validate = true;
+		} catch (PatternSyntaxException ex) {
+		}
+		return validate;
 	}
 }

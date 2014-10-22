@@ -144,6 +144,17 @@ public abstract class ConfigurationDialog extends JDialog {
 	}
 
 	/**
+	 * フレームの中心に移動する。
+	 * 
+	 * @param aFrame フレーム
+	 */
+	public final void setLocationMiddle(final Frame aFrame) {
+		int x = (aFrame.getWidth() - getWidth()) / 2;
+		int y = (aFrame.getHeight() - getHeight()) / 2;
+		setLocation(aFrame.getX() + x, aFrame.getY() + y);
+	}
+
+	/**
 	 * 設定ダイアログへリスナーを登録する。
 	 * 
 	 * @param listener リスナー

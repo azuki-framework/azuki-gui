@@ -17,12 +17,11 @@
  */
 package org.azkfw.gui.dialog;
 
-import java.awt.Component;
 import java.awt.Frame;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
-import javax.swing.JLabel;
+import org.azkfw.gui.validate.ValidationSupport;
 
 /**
  * @since 1.0.0
@@ -34,10 +33,7 @@ public abstract class BasicConfigurationDialog extends ConfigurationDialog {
 	/** serialVersionUID */
 	private static final long serialVersionUID = -4740454032721608488L;
 
-	private int marge = 10;
-	private int space = 6;
-	private int labelWidth = 160;
-	private int labelHeight = 24;
+	private int margin = 12;
 
 	/**
 	 * コンストラクタ
@@ -56,31 +52,47 @@ public abstract class BasicConfigurationDialog extends ConfigurationDialog {
 		});
 	}
 
-	protected void addConfig(final String aLabel, final Component aComponent) {
-		JLabel label = new JLabel(aLabel);
-		label.setSize(labelWidth, labelHeight);
+	protected void addConfigurationField(final ConfigurationField aField) {
+		add(aField);
+	}
 
-		add(label);
-		add(aComponent);
+	/**
+	 * バリデーション処理。
+	 * 
+	 * @return <code>true</code>で成功
+	 */
+	protected boolean isValidate() {
+		for (int i = 0; i < getComponentCount(); i++) {
+			ConfigurationField field = (ConfigurationField) getComponent(i);
+			if (field instanceof ValidationSupport) {
+				ValidationSupport support = (ValidationSupport) field;
+				if (!support.isValidate()) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	private void relayout() {
-		int x = marge;
-		int y = marge;
+		int maxLabelWidth = 80;
+		for (int i = 0; i < getComponentCount(); i++) {
+			ConfigurationField field = (ConfigurationField) getComponent(i);
+			maxLabelWidth = Math.max(field.getPreferredLabelWidth(), maxLabelWidth);
+		}
 
-		int compoenntWidth = getClientPanel().getWidth() - (marge + labelWidth + marge);
+		int x = margin;
+		int y = margin;
+		for (int i = 0; i < getComponentCount(); i++) {
+			ConfigurationField field = (ConfigurationField) getComponent(i);
+			field.setLabelWidth(maxLabelWidth);
 
-		for (int i = 0; i < getComponentCount(); i += 2) {
-			JLabel label = (JLabel) getComponent(i);
-			Component component = getComponent(i + 1);
+			int height = field.getPreferredHeight();
+			int width = getClientPanel().getWidth() - (margin * 2);
 
-			int height = (0 != component.getHeight()) ? component.getHeight() : labelHeight;
-			int width = (0 != component.getWidth()) ? component.getWidth() : compoenntWidth;
+			field.setBounds(x, y, width, height);
 
-			label.setLocation(x, y);
-			component.setBounds(x + labelWidth, y, width, height);
-
-			y += space + Math.max(label.getHeight(), component.getHeight());
+			y += height;
 		}
 	}
 }
