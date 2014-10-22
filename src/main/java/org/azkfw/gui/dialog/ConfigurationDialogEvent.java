@@ -27,14 +27,14 @@ package org.azkfw.gui.dialog;
 public class ConfigurationDialogEvent {
 
 	/** configuration dialog */
-	private ConfigurationDialog dialog;
+	private ConfigurationDialog<?> dialog;
 
 	/**
 	 * コンストラクタ
 	 * 
 	 * @param aDialog 設定ダイアログ
 	 */
-	public ConfigurationDialogEvent(final ConfigurationDialog aDialog) {
+	public ConfigurationDialogEvent(final ConfigurationDialog<?> aDialog) {
 		dialog = aDialog;
 	}
 
@@ -43,7 +43,7 @@ public class ConfigurationDialogEvent {
 	 * 
 	 * @return ダイアログ
 	 */
-	public ConfigurationDialog getDialog() {
+	public ConfigurationDialog<?> getDialog() {
 		return dialog;
 	}
 }

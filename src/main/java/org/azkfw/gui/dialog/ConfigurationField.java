@@ -39,6 +39,8 @@ public abstract class ConfigurationField extends JPanel {
 
 	public abstract int getPreferredHeight();
 
+	public abstract int getPreferredWidth();
+
 	public abstract int getPreferredLabelWidth();
 
 }

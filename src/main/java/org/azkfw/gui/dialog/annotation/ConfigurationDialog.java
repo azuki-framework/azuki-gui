@@ -21,5 +21,5 @@ public @interface ConfigurationDialog {
 	 * 
 	 * @return 設定ダイアログ
 	 */
-	public Class<? extends org.azkfw.gui.dialog.ConfigurationDialog> value();
+	public Class<? extends org.azkfw.gui.dialog.ConfigurationDialog<?>> value();
 }

@@ -87,6 +87,15 @@ public class BasicConfigurationField extends ConfigurationField implements Valid
 	}
 
 	@Override
+	public int getPreferredWidth() {
+		int width = 0;
+		if (fixComponentWidth) {
+			width = MARGIN + labelWidth + SPACE + component.getWidth() + MARGIN;
+		}
+		return width;
+	}
+
+	@Override
 	public int getPreferredHeight() {
 		return 32;
 	}

@@ -19,6 +19,7 @@ package org.azkfw.gui.dialog;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -43,16 +44,18 @@ import javax.swing.border.SoftBevelBorder;
  * @version 1.0.0 2014/10/06
  * @author Kawakicchi
  */
-public abstract class ConfigurationDialog extends JDialog {
+public abstract class ConfigurationDialog<DATA> extends JDialog {
 
 	/** serialVersionUID */
 	private static final long serialVersionUID = 4046832570158320828L;
 
+	private static final int DEFAULT_BUTTON_MARGIN = 6;
+	private static final int DEFAULT_BORDER_SIZE = 3;
 	private static final int DEFAULT_BUTTON_WIDTH = 120;
 	private static final int DEFAULT_BUTTON_HEIGHT = 24;
 
 	/** data object */
-	private Object data;
+	private DATA data;
 
 	/** listener */
 	private List<ConfigurationDialogListener> listeners;
@@ -73,11 +76,11 @@ public abstract class ConfigurationDialog extends JDialog {
 	 * @param aFrame Frame
 	 * @param aData Data
 	 */
-	public ConfigurationDialog(final Frame aFrame, final Object aData) {
+	public ConfigurationDialog(final Frame aFrame, final DATA aData) {
 		super(aFrame);
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-		setLayout(null);
-		setSize(400, 300);
+		setLayout(null);		
+		setMinimumSize(new Dimension(480, 120));
 
 		data = aData;
 		listeners = new ArrayList<ConfigurationDialogListener>();
@@ -122,6 +125,10 @@ public abstract class ConfigurationDialog extends JDialog {
 				doClickButtonCancel();
 			}
 		});
+	}
+
+	public Dimension getPreferredSize() {
+		return new Dimension(getWidth(), getHeight());
 	}
 
 	@Override
@@ -186,8 +193,8 @@ public abstract class ConfigurationDialog extends JDialog {
 	 * @param aHeight　縦幅
 	 */
 	public final void setClientPanelSize(final int aWidth, final int aHeight) {
-		Insets insets = getInsets();
-		setSize(aWidth - (insets.left + insets.left), aHeight - (insets.top + insets.bottom));
+		Insets insets = getClientInsets();
+		setSize(aWidth + (insets.left + insets.left), aHeight + (insets.top + insets.bottom));
 	}
 
 	/**
@@ -195,7 +202,7 @@ public abstract class ConfigurationDialog extends JDialog {
 	 * 
 	 * @return データ
 	 */
-	protected final Object getData() {
+	protected final DATA getData() {
 		return data;
 	}
 
@@ -211,7 +218,7 @@ public abstract class ConfigurationDialog extends JDialog {
 	 * 
 	 * @return <code>false</code>で処理を中断
 	 */
-	protected abstract boolean doClickOK();
+	protected abstract boolean doClickOK(final DATA aData);
 
 	/**
 	 * Cancelボタンが押下された時の処理。
@@ -222,7 +229,7 @@ public abstract class ConfigurationDialog extends JDialog {
 
 	private void doClickButtonOk() {
 		if (isValidate()) {
-			if (doClickOK()) {
+			if (doClickOK(data)) {
 				ConfigurationDialogEvent event = new ConfigurationDialogEvent(this);
 				synchronized (listeners) {
 					for (ConfigurationDialogListener listener : listeners) {
@@ -256,14 +263,21 @@ public abstract class ConfigurationDialog extends JDialog {
 		}
 	}
 
+	public Insets getClientInsets() {
+		Insets insets = super.getInsets();
+		return new Insets(insets.top, insets.left, insets.bottom + (DEFAULT_BUTTON_MARGIN + DEFAULT_BUTTON_HEIGHT + DEFAULT_BUTTON_MARGIN + DEFAULT_BORDER_SIZE), insets.right);
+	}
+
 	private void doResizeDialog() {
 		Insets insets = getInsets();
 		int width = getWidth() - (insets.left + insets.right);
 		int height = getHeight() - (insets.top + insets.bottom);
 
-		pnlClient.setBounds(0, 0, width, height - (5 + DEFAULT_BUTTON_HEIGHT + 10 + 3));
-		pnlBorder.setBounds(-2, height - (5 + DEFAULT_BUTTON_HEIGHT + 10 + 3), width + 4, 3);
-		btnOk.setLocation(width - (DEFAULT_BUTTON_WIDTH + 10) * 2, height - (DEFAULT_BUTTON_HEIGHT + 10));
-		btnCancel.setLocation(width - (DEFAULT_BUTTON_WIDTH + 10) * 1, height - (DEFAULT_BUTTON_HEIGHT + 10));
+		pnlClient.setBounds(0, 0, width, height - (DEFAULT_BUTTON_MARGIN + DEFAULT_BUTTON_HEIGHT + DEFAULT_BUTTON_MARGIN + DEFAULT_BORDER_SIZE));
+
+		pnlBorder.setBounds(-2, height - (DEFAULT_BUTTON_MARGIN + DEFAULT_BUTTON_HEIGHT + DEFAULT_BUTTON_MARGIN + DEFAULT_BORDER_SIZE), width + 4, DEFAULT_BORDER_SIZE);
+		
+		btnOk.setLocation(width - (DEFAULT_BUTTON_WIDTH + DEFAULT_BUTTON_MARGIN) * 2, height - (DEFAULT_BUTTON_HEIGHT + DEFAULT_BUTTON_MARGIN));
+		btnCancel.setLocation(width - (DEFAULT_BUTTON_WIDTH + DEFAULT_BUTTON_MARGIN) * 1, height - (DEFAULT_BUTTON_HEIGHT + DEFAULT_BUTTON_MARGIN));
 	}
 }

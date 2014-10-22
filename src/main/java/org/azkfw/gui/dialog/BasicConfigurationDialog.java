@@ -17,7 +17,9 @@
  */
 package org.azkfw.gui.dialog;
 
+import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Insets;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
@@ -28,7 +30,7 @@ import org.azkfw.gui.validate.ValidationSupport;
  * @version 1.0.0 2014/10/17
  * @author kawakita
  */
-public abstract class BasicConfigurationDialog extends ConfigurationDialog {
+public abstract class BasicConfigurationDialog<DATA> extends ConfigurationDialog<DATA> {
 
 	/** serialVersionUID */
 	private static final long serialVersionUID = -4740454032721608488L;
@@ -41,7 +43,7 @@ public abstract class BasicConfigurationDialog extends ConfigurationDialog {
 	 * @param aFrame 親フレーム
 	 * @param aData データ
 	 */
-	public BasicConfigurationDialog(final Frame aFrame, final Object aData) {
+	public BasicConfigurationDialog(final Frame aFrame, final DATA aData) {
 		super(aFrame, aData);
 
 		getClientPanel().addComponentListener(new ComponentAdapter() {
@@ -95,4 +97,22 @@ public abstract class BasicConfigurationDialog extends ConfigurationDialog {
 			y += height;
 		}
 	}
+
+	public Dimension getPreferredSize() {
+		relayout();
+
+		int clientWidth = 0;
+		int clientHeight = 0;
+		for (int i = 0; i < getComponentCount(); i++) {
+			ConfigurationField field = (ConfigurationField) getComponent(i);
+			clientWidth = Math.max(field.getPreferredWidth(), clientWidth);
+			clientHeight += field.getPreferredHeight();
+		}
+
+		Insets insets = getClientInsets();
+		clientWidth += insets.left + insets.right + (margin * 2);
+		clientHeight += insets.top + insets.bottom + (margin * 2);
+		return new Dimension(clientWidth, clientHeight);
+	}
+
 }

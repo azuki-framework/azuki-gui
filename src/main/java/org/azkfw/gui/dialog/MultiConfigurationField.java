@@ -143,6 +143,25 @@ public class MultiConfigurationField extends ConfigurationField implements Valid
 	}
 
 	@Override
+	public int getPreferredWidth() {
+		if (fixComponentWidth) {
+			int width = 0;
+			for (int i = 0; i < components.size(); i++) {
+				if (null != lblSeparators && 0 != i) {
+					Component c = lblSeparators.get(i - 1);
+					width += c.getWidth();
+				}
+				Component c = components.get(i);
+				width += c.getWidth();
+			}
+
+			return MARGIN + labelWidth + SPACE + width + MARGIN;
+		} else {
+			return 0;
+		}
+	}
+
+	@Override
 	public int getPreferredHeight() {
 		return 32;
 	}
