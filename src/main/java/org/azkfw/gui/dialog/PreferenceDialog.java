@@ -17,7 +17,6 @@
  */
 package org.azkfw.gui.dialog;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
@@ -71,11 +70,11 @@ public class PreferenceDialog extends JDialog {
 	private JButton btnCancel;
 
 	private TitlePanel pnlTitle;
-
 	private JPanel pnlClient;
 
 	private PreferenceData data;
 
+	private PreferenceDialogEvent event;
 	private List<PreferenceDialogListener> listeners;
 
 	/**
@@ -92,7 +91,7 @@ public class PreferenceDialog extends JDialog {
 	 * @param owner オーナー
 	 */
 	public PreferenceDialog(final Dialog owner) {
-		super(owner);
+		super(owner, true);
 		init();
 	}
 
@@ -103,7 +102,7 @@ public class PreferenceDialog extends JDialog {
 	 * @param title タイトル
 	 */
 	public PreferenceDialog(final Dialog owner, final String title) {
-		super(owner, title);
+		super(owner, title, true);
 		init();
 	}
 
@@ -136,7 +135,7 @@ public class PreferenceDialog extends JDialog {
 	 * @param owner オーナー
 	 */
 	public PreferenceDialog(final Frame owner) {
-		super(owner);
+		super(owner, true);
 		init();
 	}
 
@@ -147,7 +146,7 @@ public class PreferenceDialog extends JDialog {
 	 * @param title タイトル
 	 */
 	public PreferenceDialog(final Frame owner, final String title) {
-		super(owner, title);
+		super(owner, title, true);
 		init();
 	}
 
@@ -174,74 +173,39 @@ public class PreferenceDialog extends JDialog {
 		init();
 	}
 
+	/**
+	 * 環境設定ダイアログリスナーを追加する。
+	 * 
+	 * @param listener リスナー
+	 */
 	public final void addPreferenceDialogListener(final PreferenceDialogListener listener) {
-		listeners.add(listener);
-	}
-
-	private DefaultMutableTreeNode createNode(final PreferenceData aData) {
-		DefaultMutableTreeNode root = new DefaultMutableTreeNode(aData);
-		node(root, aData.getChildren());
-		return root;
-	}
-
-	private void node(DefaultMutableTreeNode aParent, List<PreferenceData> aDatas) {
-		if (null != aDatas) {
-			for (PreferenceData data : aDatas) {
-				DefaultMutableTreeNode node = new DefaultMutableTreeNode(data);
-				node(node, data.getChildren());
-				aParent.add(node);
-			}
+		synchronized (listeners) {
+			listeners.add(listener);
 		}
 	}
 
-	private boolean addNode(final String aPath, final String aTitle, final PreferenceClientPanel aClientPanel) {
-		String[] ids = aPath.split("/");
-		return addNode(ids, aTitle, aClientPanel);
+	/**
+	 * 環境設定ダイアログリスナーを削除する。
+	 * 
+	 * @param listener リスナー
+	 */
+	public final void removePreferenceDialogListener(final PreferenceDialogListener listener) {
+		synchronized (listeners) {
+			listeners.remove(listener);
+		}
 	}
 
-	private boolean addNode(final String[] ids, final String aTitle, final PreferenceClientPanel aClientPanel) {
-		List<String> list = new ArrayList<String>();
-		for (String id : ids) {
-			list.add(id);
+	/**
+	 * 
+	 * @param aPath /aaa/bbb
+	 * @param aTitle
+	 * @param aPanel
+	 */
+	public void addPreference(final String aPath, final String aTitle, final PreferencePanel aPanel) {
+		if (null != aPanel) {
+			aPanel.setPreferenceDialog(this);
 		}
-
-		list.remove(0);
-
-		addNode(aTitle, aClientPanel, data, list);
-		return true;
-	}
-
-	private void addNode(final String aTitle, final PreferenceClientPanel aClientPanel, final PreferenceData parent, final List<String> ids) {
-		String id = ids.get(0);
-
-		PreferenceData target = null;
-		for (PreferenceData pre : parent.getChildren()) {
-			if (id.equals(pre.getId())) {
-				target = pre;
-				break;
-			}
-		}
-
-		if (1 == ids.size()) {
-			if (null == target) { // 最後でかつ未作成				
-				target = new PreferenceData(id, aTitle, aClientPanel);
-				parent.add(target);
-			} else { // 最後でかつ作成済み
-				if (null != target.getTitle() || null != target.getClientPanel()) {
-					// err
-					System.out.println("重複");
-					return;
-				}
-				target.set(aTitle, aClientPanel);
-			}
-		} else { // 途中のツリー
-			if (null == target) {
-				target = new PreferenceData(id);
-				parent.add(target);
-			}
-			ids.remove(0);
-			addNode(aTitle, aClientPanel, target, ids);
-		}
+		addNode(aPath, aTitle, aPanel);
 	}
 
 	private void init() {
@@ -249,6 +213,8 @@ public class PreferenceDialog extends JDialog {
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
 		data = new PreferenceData("", "", null);
+
+		event = new PreferenceDialogEvent(this);
 		listeners = new ArrayList<PreferenceDialogListener>();
 
 		tree = new JTree();
@@ -263,7 +229,6 @@ public class PreferenceDialog extends JDialog {
 		pnlClient = new JPanel();
 		pnlClient.setLayout(null);
 		pnlClient.setLocation(0, 40);
-		pnlClient.add(new TestPanel());
 
 		pnlRight = new JPanel();
 		pnlRight.setLayout(null);
@@ -296,7 +261,6 @@ public class PreferenceDialog extends JDialog {
 				pnlClient.setSize(width, height - DEFAULT_TITLE_HEIGHT);
 
 				if (0 < pnlClient.getComponentCount()) {
-					System.out.println("change component");
 					Component c = pnlClient.getComponent(0);
 					c.setBounds(0, 0, width, height - DEFAULT_TITLE_HEIGHT);
 				}
@@ -327,7 +291,7 @@ public class PreferenceDialog extends JDialog {
 					if (add) {
 						pnlClient.removeAll();
 
-						PreferenceClientPanel component = dd.getClientPanel();
+						PreferencePanel component = dd.getClientPanel();
 						if (null != component) {
 							pnlClient.add(component);
 							component.setSize(pnlClient.getSize());
@@ -363,11 +327,91 @@ public class PreferenceDialog extends JDialog {
 		setSize(800, 400);
 	}
 
-	private void onClickOkButton() {
+	private DefaultMutableTreeNode createNode(final PreferenceData aData) {
+		DefaultMutableTreeNode root = new DefaultMutableTreeNode(aData);
+		node(root, aData.getChildren());
+		return root;
+	}
 
+	private void node(DefaultMutableTreeNode aParent, List<PreferenceData> aDatas) {
+		if (null != aDatas) {
+			for (PreferenceData data : aDatas) {
+				DefaultMutableTreeNode node = new DefaultMutableTreeNode(data);
+				node(node, data.getChildren());
+				aParent.add(node);
+			}
+		}
+	}
+
+	private boolean addNode(final String aPath, final String aTitle, final PreferencePanel aClientPanel) {
+		String[] ids = aPath.split("/");
+		return addNode(ids, aTitle, aClientPanel);
+	}
+
+	private boolean addNode(final String[] ids, final String aTitle, final PreferencePanel aClientPanel) {
+		List<String> list = new ArrayList<String>();
+		for (String id : ids) {
+			list.add(id);
+		}
+		list.remove(0);
+		addNode(aTitle, aClientPanel, data, list);
+		return true;
+	}
+
+	private void addNode(final String aTitle, final PreferencePanel aClientPanel, final PreferenceData parent, final List<String> ids) {
+		String id = ids.get(0);
+		PreferenceData target = null;
+		for (PreferenceData pre : parent.getChildren()) {
+			if (id.equals(pre.getId())) {
+				target = pre;
+				break;
+			}
+		}
+
+		if (1 == ids.size()) {
+			if (null == target) { // 最後でかつ未作成				
+				target = new PreferenceData(id, aTitle, aClientPanel);
+				parent.add(target);
+			} else { // 最後でかつ作成済み
+				if (null != target.getTitle() || null != target.getClientPanel()) {
+					// err
+					System.out.println("重複");
+					return;
+				}
+				target.set(aTitle, aClientPanel);
+			}
+		} else { // 途中のツリー
+			if (null == target) {
+				target = new PreferenceData(id);
+				parent.add(target);
+			}
+			ids.remove(0);
+			addNode(aTitle, aClientPanel, target, ids);
+		}
+	}
+
+	private void onClickOkButton() {
+		if (isValidate()) {
+			doStore();
+			doExit();
+		}
 	}
 
 	private void onClickCancelButton() {
+		doExit();
+	}
+
+	private void doExit() {
+		synchronized (listeners) {
+			for (PreferenceDialogListener listener : listeners) {
+				try {
+					listener.preferenceDialogClosed(event);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		}
+
 		setVisible(false);
 		dispose();
 	}
@@ -383,17 +427,17 @@ public class PreferenceDialog extends JDialog {
 		btnCancel.setLocation(width - (DEFAULT_BUTTON_WIDTH + 10) * 1, height - (DEFAULT_BUTTON_HEIGHT + 10));
 	}
 
-	/**
-	 * 
-	 * @param aPath /aaa/bbb
-	 * @param aTitle
-	 * @param aPanel
-	 */
-	public void addPreference(final String aPath, final String aTitle, final PreferenceClientPanel aPanel) {
-		addNode(aPath, aTitle, aPanel);
-	}
-
 	private void doWindowOpened() {
+		synchronized (listeners) {
+			for (PreferenceDialogListener listener : listeners) {
+				try {
+					listener.preferenceDialogOpened(event);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		}
+
 		DefaultMutableTreeNode root = createNode(data);
 		DefaultTreeModel model = new DefaultTreeModel(root);
 		tree.setModel(model);
@@ -404,45 +448,64 @@ public class PreferenceDialog extends JDialog {
 			int y = parent.getY() + (parent.getHeight() - getHeight()) / 2;
 			setLocation(x, y);
 		}
+
+		doLoad();
 	}
 
-	private class TestPanel extends PreferenceClientPanel {
+	private void doLoad() {
+		doLoad(data);
+	}
 
-		/** serialVersionUID */
-		private static final long serialVersionUID = -8475543665402763379L;
+	private boolean isValidate() {
+		return isValidate(data);
+	}
 
-		private JScrollPane scroll;
-		private JPanel panel;
-		private JLabel lblName;
+	private void doStore() {
+		doStore(data);
 
-		public TestPanel() {
-			setLayout(null);
-			setBackground(Color.pink);
-
-			panel = new JPanel();
-			panel.setLayout(null);
-			panel.setBackground(Color.red);
-			panel.setLocation(0, 0);
-			panel.setSize(600, 600);
-
-			lblName = new JLabel("AAA");
-			lblName.setLocation(0, 0);
-			lblName.setSize(200, 200);
-			panel.add(lblName);
-
-			scroll = new JScrollPane(panel);
-			scroll.setLocation(0, 0);
-			scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-
-			add(scroll);
-
-			addComponentListener(new ComponentAdapter() {
-				@Override
-				public void componentResized(final ComponentEvent event) {
-					scroll.setSize(getSize());
+		synchronized (listeners) {
+			for (PreferenceDialogListener listener : listeners) {
+				try {
+					listener.preferenceDialogStored(event);
+				} catch (Exception ex) {
+					ex.printStackTrace();
 				}
-			});
+			}
+		}
+	}
+
+	private void doLoad(final PreferenceData aData) {
+		PreferencePanel pnl = aData.getClientPanel();
+		if (null != pnl) {
+			pnl.load();
+		}
+		for (PreferenceData data : aData.getChildren()) {
+			doLoad(data);
+		}
+	}
+
+	private boolean isValidate(final PreferenceData aData) {
+		PreferencePanel pnl = aData.getClientPanel();
+		if (null != pnl) {
+			if (!pnl.isVisible()) {
+				return false;
+			}
+		}
+		for (PreferenceData data : aData.getChildren()) {
+			if (!isValidate(data)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private void doStore(final PreferenceData aData) {
+		PreferencePanel pnl = aData.getClientPanel();
+		if (null != pnl) {
+			pnl.doStore();
+		}
+		for (PreferenceData data : aData.getChildren()) {
+			doStore(data);
 		}
 	}
 
@@ -490,7 +553,7 @@ public class PreferenceDialog extends JDialog {
 		private String id;
 		private String title;
 
-		private PreferenceClientPanel pnlClient;
+		private PreferencePanel pnlClient;
 
 		private List<PreferenceData> children;
 
@@ -519,14 +582,14 @@ public class PreferenceDialog extends JDialog {
 		 * @param aTitle
 		 * @param aComponent
 		 */
-		public PreferenceData(final String aId, final String aTitle, final PreferenceClientPanel aClientPanel) {
+		public PreferenceData(final String aId, final String aTitle, final PreferencePanel aClientPanel) {
 			id = aId;
 			title = aTitle;
 			pnlClient = aClientPanel;
 			children = new ArrayList<PreferenceData>();
 		}
 
-		public void set(final String aTitle, final PreferenceClientPanel aClientPanel) {
+		public void set(final String aTitle, final PreferencePanel aClientPanel) {
 			title = aTitle;
 			pnlClient = aClientPanel;
 		}
@@ -539,7 +602,7 @@ public class PreferenceDialog extends JDialog {
 			return title;
 		}
 
-		public PreferenceClientPanel getClientPanel() {
+		public PreferencePanel getClientPanel() {
 			return pnlClient;
 		}
 

@@ -38,6 +38,10 @@ public class ConfigurationDialogEvent {
 		dialog = aDialog;
 	}
 
+	public Object getSource() {
+		return dialog;
+	}
+
 	/**
 	 * 設定ダイアログを取得する。
 	 * 

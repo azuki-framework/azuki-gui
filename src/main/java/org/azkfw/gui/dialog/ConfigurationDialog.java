@@ -19,6 +19,7 @@ package org.azkfw.gui.dialog;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Insets;
@@ -78,8 +79,47 @@ public abstract class ConfigurationDialog<DATA> extends JDialog {
 	 */
 	public ConfigurationDialog(final Frame aFrame, final DATA aData) {
 		super(aFrame);
+		init(aData);
+	}
+
+	/**
+	 * コンストラクタ
+	 * 
+	 * @param aDialog Dialog
+	 * @param aData Data
+	 */
+	public ConfigurationDialog(final Dialog aDialog, final DATA aData) {
+		super(aDialog);
+		init(aData);
+	}
+
+	/**
+	 * コンストラクタ
+	 * 
+	 * @param aFrame Frame
+	 * @param aModal Modal
+	 * @param aData Data
+	 */
+	public ConfigurationDialog(final Frame aFrame, final boolean aModal, final DATA aData) {
+		super(aFrame, aModal);
+		init(aData);
+	}
+
+	/**
+	 * コンストラクタ
+	 * 
+	 * @param aDialog Dialog
+	 * @param aModal Modal
+	 * @param aData Data
+	 */
+	public ConfigurationDialog(final Dialog aDialog, final boolean aModal, final DATA aData) {
+		super(aDialog, aModal);
+		init(aData);
+	}
+
+	private void init(final DATA aData) {
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-		setLayout(null);		
+		setLayout(null);
 		setMinimumSize(new Dimension(480, 120));
 
 		data = aData;
@@ -124,6 +164,11 @@ public abstract class ConfigurationDialog<DATA> extends JDialog {
 			public void windowClosing(final WindowEvent event) {
 				doClickButtonCancel();
 			}
+
+			@Override
+			public void windowOpened(final WindowEvent event) {
+				setSize(getPreferredSize());
+			}
 		});
 	}
 
@@ -151,14 +196,14 @@ public abstract class ConfigurationDialog<DATA> extends JDialog {
 	}
 
 	/**
-	 * フレームの中心に移動する。
+	 * コンテナの中心に移動する。
 	 * 
-	 * @param aFrame フレーム
+	 * @param aParent 親コンテナ
 	 */
-	public final void setLocationMiddle(final Frame aFrame) {
-		int x = (aFrame.getWidth() - getWidth()) / 2;
-		int y = (aFrame.getHeight() - getHeight()) / 2;
-		setLocation(aFrame.getX() + x, aFrame.getY() + y);
+	public final void setLocationMiddle(final Container aParent) {
+		int x = (aParent.getWidth() - getWidth()) / 2;
+		int y = (aParent.getHeight() - getHeight()) / 2;
+		setLocation(aParent.getX() + x, aParent.getY() + y);
 	}
 
 	/**
@@ -202,7 +247,7 @@ public abstract class ConfigurationDialog<DATA> extends JDialog {
 	 * 
 	 * @return データ
 	 */
-	protected final DATA getData() {
+	public final DATA getData() {
 		return data;
 	}
 
@@ -265,7 +310,8 @@ public abstract class ConfigurationDialog<DATA> extends JDialog {
 
 	public Insets getClientInsets() {
 		Insets insets = super.getInsets();
-		return new Insets(insets.top, insets.left, insets.bottom + (DEFAULT_BUTTON_MARGIN + DEFAULT_BUTTON_HEIGHT + DEFAULT_BUTTON_MARGIN + DEFAULT_BORDER_SIZE), insets.right);
+		return new Insets(insets.top, insets.left, insets.bottom
+				+ (DEFAULT_BUTTON_MARGIN + DEFAULT_BUTTON_HEIGHT + DEFAULT_BUTTON_MARGIN + DEFAULT_BORDER_SIZE), insets.right);
 	}
 
 	private void doResizeDialog() {
@@ -275,8 +321,9 @@ public abstract class ConfigurationDialog<DATA> extends JDialog {
 
 		pnlClient.setBounds(0, 0, width, height - (DEFAULT_BUTTON_MARGIN + DEFAULT_BUTTON_HEIGHT + DEFAULT_BUTTON_MARGIN + DEFAULT_BORDER_SIZE));
 
-		pnlBorder.setBounds(-2, height - (DEFAULT_BUTTON_MARGIN + DEFAULT_BUTTON_HEIGHT + DEFAULT_BUTTON_MARGIN + DEFAULT_BORDER_SIZE), width + 4, DEFAULT_BORDER_SIZE);
-		
+		pnlBorder.setBounds(-2, height - (DEFAULT_BUTTON_MARGIN + DEFAULT_BUTTON_HEIGHT + DEFAULT_BUTTON_MARGIN + DEFAULT_BORDER_SIZE), width + 4,
+				DEFAULT_BORDER_SIZE);
+
 		btnOk.setLocation(width - (DEFAULT_BUTTON_WIDTH + DEFAULT_BUTTON_MARGIN) * 2, height - (DEFAULT_BUTTON_HEIGHT + DEFAULT_BUTTON_MARGIN));
 		btnCancel.setLocation(width - (DEFAULT_BUTTON_WIDTH + DEFAULT_BUTTON_MARGIN) * 1, height - (DEFAULT_BUTTON_HEIGHT + DEFAULT_BUTTON_MARGIN));
 	}

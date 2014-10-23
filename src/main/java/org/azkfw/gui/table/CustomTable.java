@@ -62,12 +62,11 @@ public class CustomTable extends JTable {
 		// このメソッドの戻り値として返す。
 		// セルに置けれているSwingコンポーネントを、
 		// そのままセルレンダラーのコンポーネントとして使うことになる。
-		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+		public Component getTableCellRendererComponent(final JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 			JComponent c = (JComponent) value;
 			// テーブルの各行の高さを調整する。
 			Dimension d = c.getPreferredSize();
 			if (table.getRowHeight(row) < d.height) {
-
 				table.setRowHeight(row, d.height);
 			}
 			return c;

@@ -17,6 +17,7 @@
  */
 package org.azkfw.gui.dialog;
 
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Insets;
@@ -45,7 +46,45 @@ public abstract class BasicConfigurationDialog<DATA> extends ConfigurationDialog
 	 */
 	public BasicConfigurationDialog(final Frame aFrame, final DATA aData) {
 		super(aFrame, aData);
+		init();
+	}
 
+	/**
+	 * コンストラクタ
+	 * 
+	 * @param aDialog 親ダイアログ
+	 * @param aData データ
+	 */
+	public BasicConfigurationDialog(final Dialog aDialog, final DATA aData) {
+		super(aDialog, aData);
+		init();
+	}
+
+	/**
+	 * コンストラクタ
+	 * 
+	 * @param aFrame 親フレーム
+	 * @param aModal モーダル
+	 * @param aData データ
+	 */
+	public BasicConfigurationDialog(final Frame aFrame, final boolean aModal, final DATA aData) {
+		super(aFrame, aData);
+		init();
+	}
+
+	/**
+	 * コンストラクタ
+	 * 
+	 * @param aDialog 親ダイアログ
+	 * @param aModal モーダル
+	 * @param aData データ
+	 */
+	public BasicConfigurationDialog(final Dialog aDialog, final boolean aModal, final DATA aData) {
+		super(aDialog, aData);
+		init();
+	}
+
+	private void init() {
 		getClientPanel().addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(final ComponentEvent event) {

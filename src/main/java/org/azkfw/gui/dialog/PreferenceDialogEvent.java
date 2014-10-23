@@ -18,17 +18,26 @@
 package org.azkfw.gui.dialog;
 
 /**
- * このインターフェースは、環境設定ダイアログ画面用のリスナー機能を定義したインタフェースです。
+ * このクラスは、環境設定ダイアログ画面用のイベント情報を保持したクラスです。
  * 
  * @since 1.0.0
- * @version 1.0.0 2014/10/21
+ * @version 1.0.0 2014/10/23
  * @author kawakicchi
  */
-public interface PreferenceDialogListener {
+public class PreferenceDialogEvent {
 
-	public void preferenceDialogOpened(final PreferenceDialogEvent event);
+	/** Preference dialog */
+	private PreferenceDialog dialog;
 
-	public void preferenceDialogStored(final PreferenceDialogEvent event);
+	public PreferenceDialogEvent(final PreferenceDialog aDialog) {
+		dialog = aDialog;
+	}
 
-	public void preferenceDialogClosed(final PreferenceDialogEvent event);
+	public Object getSource() {
+		return dialog;
+	}
+
+	public PreferenceDialog getDialog() {
+		return dialog;
+	}
 }

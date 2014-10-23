@@ -17,16 +17,22 @@
  */
 package org.azkfw.gui.dialog;
 
-import javax.swing.JPanel;
-
 /**
+ * このクラスは、環境設定パネル用のリスナー機能を定義したアダプタークラスです。
+ * 
  * @since 1.0.0
  * @version 1.0.0 2014/10/21
  * @author kawakicchi
  */
-public class PreferenceClientPanel extends JPanel {
+public abstract class PreferencePanelAdapter implements PreferencePanelListener {
 
-	/** serialVersionUID */
-	private static final long serialVersionUID = -3152534264542817918L;
+	@Override
+	public void preferencePanelLoading(final PreferencePanelEvent event) {
 
+	}
+
+	@Override
+	public void preferencePanelStored(final PreferencePanelEvent event) {
+
+	}
 }
