@@ -30,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.azkfw.gui.validate.ValidationSupport;
+import org.azkfw.util.StringUtility;
 
 /**
  * このクラスは、ファイル選択用の基底フィールドクラスです。
@@ -42,8 +43,6 @@ public class FileChooserField extends JPanel implements ValidationSupport {
 
 	/** serialVersionUID */
 	private static final long serialVersionUID = 8053290468852958097L;
-
-	private File file;
 
 	private JFileChooser fileChooser;
 	private String approveButtonText;
@@ -68,10 +67,9 @@ public class FileChooserField extends JPanel implements ValidationSupport {
 	 * コンストラクタ
 	 */
 	public FileChooserField(final String aApproveButtonText, final File aFile) {
-		file = aFile;
 		approveButtonText = aApproveButtonText;
 
-		text = new JTextField((null == file) ? "" : file.getAbsolutePath());
+		text = new JTextField((null == aFile) ? "" : aFile.getAbsolutePath());
 		button = new JButton(approveButtonText);
 
 		setLayout(null);
@@ -109,12 +107,15 @@ public class FileChooserField extends JPanel implements ValidationSupport {
 	}
 
 	public void setFile(final File aFile) {
-		file = aFile;
-		text.setText((null == file) ? "" : file.getAbsolutePath());
+		text.setText((null == aFile) ? "" : aFile.getAbsolutePath());
 	}
 
 	public File getFile() {
-		return file;
+		if (StringUtility.isNotEmpty(text.getText())) {
+			return new File(text.getText());
+		} else {
+			return null;
+		}
 	}
 
 	public void setDialogTitle(final String aTitle) {
@@ -130,10 +131,10 @@ public class FileChooserField extends JPanel implements ValidationSupport {
 	}
 
 	private void doFileOpenDialog() {
-		fileChooser.setSelectedFile(file);
+		fileChooser.setSelectedFile(new File(text.getText()));
 		int selected = fileChooser.showDialog(this, approveButtonText);
 		if (selected == JFileChooser.APPROVE_OPTION) {
-			file = fileChooser.getSelectedFile();
+			File file = fileChooser.getSelectedFile();
 			text.setText(file.getAbsolutePath());
 		} else if (selected == JFileChooser.CANCEL_OPTION) {
 		} else if (selected == JFileChooser.ERROR_OPTION) {
