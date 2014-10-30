@@ -130,6 +130,10 @@ public class FileChooserField extends JPanel implements ValidationSupport {
 		fileChooser.setFileSelectionMode(aMode);
 	}
 
+	public void setCurrentDirectory(final File aFile) {
+		fileChooser.setCurrentDirectory(aFile);
+	}
+
 	private void doFileOpenDialog() {
 		fileChooser.setSelectedFile(new File(text.getText()));
 		int selected = fileChooser.showDialog(this, approveButtonText);
