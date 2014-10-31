@@ -502,7 +502,7 @@ public class PreferenceDialog extends JDialog {
 	private void doStore(final PreferenceData aData) {
 		PreferencePanel pnl = aData.getClientPanel();
 		if (null != pnl) {
-			pnl.doStore();
+			pnl.store();
 		}
 		for (PreferenceData data : aData.getChildren()) {
 			doStore(data);

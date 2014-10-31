@@ -70,6 +70,8 @@ public abstract class ConfigurationDialog<DATA> extends JDialog {
 	private JButton btnOk;
 	/** Cancel button */
 	private JButton btnCancel;
+	/** Option button list */
+	private List<JButton> optionButtonList;
 
 	/**
 	 * コンストラクタ
@@ -124,6 +126,7 @@ public abstract class ConfigurationDialog<DATA> extends JDialog {
 
 		data = aData;
 		listeners = new ArrayList<ConfigurationDialogListener>();
+		optionButtonList = new ArrayList<JButton>();
 
 		Container container = getContentPane();
 
@@ -193,6 +196,16 @@ public abstract class ConfigurationDialog<DATA> extends JDialog {
 
 	protected final JPanel getClientPanel() {
 		return pnlClient;
+	}
+
+	public final void addOptionButton(final JButton aButton) {
+		if (0 >= aButton.getWidth()) {
+			aButton.setSize(DEFAULT_BUTTON_WIDTH, DEFAULT_BUTTON_HEIGHT);
+		}
+		optionButtonList.add(aButton);
+		getContentPane().add(aButton);
+
+		doResizeDialog();
 	}
 
 	/**
@@ -324,7 +337,14 @@ public abstract class ConfigurationDialog<DATA> extends JDialog {
 		pnlBorder.setBounds(-2, height - (DEFAULT_BUTTON_MARGIN + DEFAULT_BUTTON_HEIGHT + DEFAULT_BUTTON_MARGIN + DEFAULT_BORDER_SIZE), width + 4,
 				DEFAULT_BORDER_SIZE);
 
-		btnOk.setLocation(width - (DEFAULT_BUTTON_WIDTH + DEFAULT_BUTTON_MARGIN) * 2, height - (DEFAULT_BUTTON_HEIGHT + DEFAULT_BUTTON_MARGIN));
-		btnCancel.setLocation(width - (DEFAULT_BUTTON_WIDTH + DEFAULT_BUTTON_MARGIN) * 1, height - (DEFAULT_BUTTON_HEIGHT + DEFAULT_BUTTON_MARGIN));
+		int x = DEFAULT_BUTTON_MARGIN;
+		int y = height - (DEFAULT_BUTTON_HEIGHT + DEFAULT_BUTTON_MARGIN);
+		for (JButton button : optionButtonList) {
+			button.setLocation(x, y);
+			x += button.getWidth() + DEFAULT_BUTTON_MARGIN;
+		}
+
+		btnOk.setLocation(width - (DEFAULT_BUTTON_WIDTH + DEFAULT_BUTTON_MARGIN) * 2, y);
+		btnCancel.setLocation(width - (DEFAULT_BUTTON_WIDTH + DEFAULT_BUTTON_MARGIN) * 1, y);
 	}
 }
