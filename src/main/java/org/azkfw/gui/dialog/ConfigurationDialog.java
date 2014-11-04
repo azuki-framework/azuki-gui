@@ -76,6 +76,16 @@ public abstract class ConfigurationDialog<DATA> extends JDialog {
 	/**
 	 * コンストラクタ
 	 * 
+	 * @param aData Data
+	 */
+	public ConfigurationDialog(final DATA aData) {
+		super();
+		init(aData);
+	}
+
+	/**
+	 * コンストラクタ
+	 * 
 	 * @param aFrame Frame
 	 * @param aData Data
 	 */
