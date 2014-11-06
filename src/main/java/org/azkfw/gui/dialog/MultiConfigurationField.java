@@ -53,6 +53,8 @@ public class MultiConfigurationField extends ConfigurationField implements Valid
 	private List<Component> lblSeparators;
 	private int separatorWidth;
 
+	private boolean enableValidate;
+
 	public MultiConfigurationField(final String aLabel, final Component... aComponents) {
 		this(aLabel, null, aComponents);
 	}
@@ -60,6 +62,7 @@ public class MultiConfigurationField extends ConfigurationField implements Valid
 	public MultiConfigurationField(final String aLabel, final String aSeparateString, final Component... aComponents) {
 		super();
 
+		enableValidate = true;
 		label = new JLabel(aLabel);
 
 		separatorWidth = 0;
@@ -177,14 +180,25 @@ public class MultiConfigurationField extends ConfigurationField implements Valid
 		return dm.width;
 	}
 
+	public void setEnableValidate(final boolean enable) {
+		enableValidate = enable;
+	}
+
+	@Override
+	public boolean isEnableValidate() {
+		return enableValidate;
+	}
+
 	@Override
 	public boolean isValidate() {
 		for (Component component : components) {
 			if (null != component) {
 				if (component instanceof ValidationSupport) {
 					ValidationSupport support = (ValidationSupport) component;
-					if (!support.isValidate()) {
-						return false;
+					if (support.isEnableValidate()) {
+						if (!support.isValidate()) {
+							return false;
+						}
 					}
 				}
 			}

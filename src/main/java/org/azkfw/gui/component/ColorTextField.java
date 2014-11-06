@@ -49,6 +49,8 @@ public class ColorTextField extends JPanel implements ValidationSupport {
 	/** 選択ボタン */
 	private JButton button;
 
+	private boolean enableValidate;
+
 	/**
 	 * コンストラクタ
 	 */
@@ -57,6 +59,8 @@ public class ColorTextField extends JPanel implements ValidationSupport {
 	}
 
 	public ColorTextField(final Color aColor) {
+		enableValidate = true;
+
 		Dimension dm = getMinimumSize();
 		dm.width = 160;
 		setMinimumSize(dm);
@@ -91,6 +95,12 @@ public class ColorTextField extends JPanel implements ValidationSupport {
 		setColor(aColor);
 	}
 
+	public void setEnabled(final boolean enabled) {
+		super.setEnabled(enabled);
+		text.setEditable(enabled);
+		button.setEnabled(enabled);
+	}
+
 	public void setText(final String aText) {
 		text.setText(aText);
 	}
@@ -107,6 +117,15 @@ public class ColorTextField extends JPanel implements ValidationSupport {
 	public Color getColor() {
 		Color color = stringToRgb(text.getText());
 		return color;
+	}
+
+	public void setEnableValidate(final boolean enable) {
+		enableValidate = enable;
+	}
+
+	@Override
+	public boolean isEnableValidate() {
+		return enableValidate;
 	}
 
 	@Override

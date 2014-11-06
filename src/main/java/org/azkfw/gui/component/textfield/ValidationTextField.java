@@ -39,15 +39,19 @@ public abstract class ValidationTextField extends JTextField implements Validati
 
 	// requisite
 
+	private boolean enableValidate;
+
 	/**
 	 * コンストラクタ
 	 */
 	public ValidationTextField() {
-
+		enableValidate = true;
 		addKeyListener(new KeyAdapter() {
 			@Override
-			public void keyReleased(KeyEvent arg0) {
-				doValidate(isValidate());
+			public void keyReleased(final KeyEvent event) {
+				if (isEnableValidate()) {
+					doValidate(isValidate());
+				}
 			}
 		});
 	}
@@ -55,7 +59,9 @@ public abstract class ValidationTextField extends JTextField implements Validati
 	@Override
 	public void setText(final String text) {
 		super.setText(text);
-		doValidate(isValidate());
+		if (isEnableValidate()) {
+			doValidate(isValidate());
+		}
 	}
 
 	/**
@@ -71,4 +77,12 @@ public abstract class ValidationTextField extends JTextField implements Validati
 		}
 	}
 
+	@Override
+	public boolean isEnableValidate() {
+		return enableValidate;
+	}
+
+	public void setEnableValidate(final boolean enable) {
+		enableValidate = enable;
+	}
 }

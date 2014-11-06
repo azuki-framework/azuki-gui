@@ -47,6 +47,8 @@ public class FileChooserField extends JPanel implements ValidationSupport {
 	private JFileChooser fileChooser;
 	private String approveButtonText;
 
+	private boolean enableValidate;
+
 	private JTextField text;
 	private JButton button;
 
@@ -57,17 +59,12 @@ public class FileChooserField extends JPanel implements ValidationSupport {
 		this(aApproveButtonText, null);
 	}
 
-	public void setEnabled(final boolean enabled) {
-		super.setEnabled(enabled);
-		text.setEditable(enabled);
-		button.setEnabled(enabled);
-	}
-
 	/**
 	 * コンストラクタ
 	 */
 	public FileChooserField(final String aApproveButtonText, final File aFile) {
 		approveButtonText = aApproveButtonText;
+		enableValidate = true;
 
 		text = new JTextField((null == aFile) ? "" : aFile.getAbsolutePath());
 		button = new JButton(approveButtonText);
@@ -95,6 +92,21 @@ public class FileChooserField extends JPanel implements ValidationSupport {
 				button.setBounds(width - dm.width, 0, dm.width, height);
 			}
 		});
+	}
+
+	public void setEnabled(final boolean enabled) {
+		super.setEnabled(enabled);
+		text.setEditable(enabled);
+		button.setEnabled(enabled);
+	}
+
+	public void setEnableValidate(final boolean enable) {
+		enableValidate = enable;
+	}
+
+	@Override
+	public boolean isEnableValidate() {
+		return enableValidate;
 	}
 
 	@Override

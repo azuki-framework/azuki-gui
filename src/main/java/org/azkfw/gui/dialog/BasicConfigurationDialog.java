@@ -107,8 +107,10 @@ public abstract class BasicConfigurationDialog<DATA> extends ConfigurationDialog
 			ConfigurationField field = (ConfigurationField) getComponent(i);
 			if (field instanceof ValidationSupport) {
 				ValidationSupport support = (ValidationSupport) field;
-				if (!support.isValidate()) {
-					return false;
+				if (support.isEnableValidate()) {
+					if (!support.isValidate()) {
+						return false;
+					}
 				}
 			}
 		}

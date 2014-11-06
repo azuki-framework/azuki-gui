@@ -47,9 +47,12 @@ public class BasicConfigurationField extends ConfigurationField implements Valid
 	private Component component;
 	private boolean fixComponentWidth;
 
+	private boolean enableValidate;
+
 	public BasicConfigurationField(final String aLabel, final Component aComponent) {
 		super();
 
+		enableValidate = true;
 		label = new JLabel(aLabel);
 
 		component = aComponent;
@@ -106,13 +109,24 @@ public class BasicConfigurationField extends ConfigurationField implements Valid
 		return dm.width;
 	}
 
+	public void setEnableValidate(final boolean enable) {
+		enableValidate = enable;
+	}
+
+	@Override
+	public boolean isEnableValidate() {
+		return enableValidate;
+	}
+
 	@Override
 	public boolean isValidate() {
 		if (null != component) {
 			if (component instanceof ValidationSupport) {
 				ValidationSupport support = (ValidationSupport) component;
-				if (!support.isValidate()) {
-					return false;
+				if (support.isEnableValidate()) {
+					if (!support.isValidate()) {
+						return false;
+					}
 				}
 			}
 		}

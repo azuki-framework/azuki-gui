@@ -25,6 +25,13 @@ package org.azkfw.gui.validate;
 public interface ValidationSupport {
 
 	/**
+	 * バリデーション機能が有効化判断する。
+	 * 
+	 * @return 判断
+	 */
+	public boolean isEnableValidate();
+
+	/**
 	 * バリデーション結果を判断する。
 	 * 
 	 * @return 判断
