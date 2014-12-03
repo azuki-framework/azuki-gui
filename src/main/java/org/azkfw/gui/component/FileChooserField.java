@@ -23,12 +23,18 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
+import org.azkfw.gui.event.FileChooserEvent;
+import org.azkfw.gui.event.FileChooserListener;
 import org.azkfw.gui.validate.ValidationSupport;
 import org.azkfw.util.StringUtility;
 
@@ -52,6 +58,9 @@ public class FileChooserField extends JPanel implements ValidationSupport {
 	private JTextField text;
 	private JButton button;
 
+	private FileChooserEvent event;
+	private List<FileChooserListener> listeners;
+
 	/**
 	 * コンストラクタ
 	 */
@@ -63,10 +72,13 @@ public class FileChooserField extends JPanel implements ValidationSupport {
 	 * コンストラクタ
 	 */
 	public FileChooserField(final String aApproveButtonText, final File aFile) {
+		event = new FileChooserEvent(this);
+		listeners = new ArrayList<FileChooserListener>();
+
 		approveButtonText = aApproveButtonText;
 		enableValidate = true;
 
-		text = new JTextField((null == aFile) ? "" : aFile.getAbsolutePath());
+		text = new JTextField();
 		button = new JButton(approveButtonText);
 
 		setLayout(null);
@@ -92,6 +104,44 @@ public class FileChooserField extends JPanel implements ValidationSupport {
 				button.setBounds(width - dm.width, 0, dm.width, height);
 			}
 		});
+		text.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent arg0) {
+				doFileChooserChanged();
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent arg0) {
+				doFileChooserChanged();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent arg0) {
+				doFileChooserChanged();
+			}
+		});
+
+		setFile(aFile);
+	}
+
+	public void addFileChooserListener(final FileChooserListener aListener) {
+		synchronized (listeners) {
+			listeners.add(aListener);
+		}
+	}
+
+	public void removeFileChooserListener(final FileChooserListener aListener) {
+		synchronized (listeners) {
+			listeners.remove(aListener);
+		}
+	}
+
+	private void doFileChooserChanged() {
+		synchronized (listeners) {
+			for (FileChooserListener listener : listeners) {
+				listener.fileChooserChanged(event);
+			}
+		}
 	}
 
 	public void setEnabled(final boolean enabled) {
@@ -112,6 +162,10 @@ public class FileChooserField extends JPanel implements ValidationSupport {
 	@Override
 	public boolean isValidate() {
 		return (0 < text.getText().length());
+	}
+
+	public void setText(final String aString) {
+		text.setText(aString);
 	}
 
 	public String getText() {
