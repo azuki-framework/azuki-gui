@@ -61,6 +61,8 @@ public class FileChooserField extends JPanel implements ValidationSupport {
 	private FileChooserEvent event;
 	private List<FileChooserListener> listeners;
 
+	private boolean required;
+
 	/**
 	 * コンストラクタ
 	 */
@@ -74,6 +76,8 @@ public class FileChooserField extends JPanel implements ValidationSupport {
 	public FileChooserField(final String aApproveButtonText, final File aFile) {
 		event = new FileChooserEvent(this);
 		listeners = new ArrayList<FileChooserListener>();
+
+		required = true;
 
 		approveButtonText = aApproveButtonText;
 		enableValidate = true;
@@ -161,7 +165,11 @@ public class FileChooserField extends JPanel implements ValidationSupport {
 
 	@Override
 	public boolean isValidate() {
-		return (0 < text.getText().length());
+		if (required) {
+			return (0 < text.getText().length());
+		} else {
+			return true;
+		}
 	}
 
 	public void setText(final String aString) {
@@ -182,6 +190,14 @@ public class FileChooserField extends JPanel implements ValidationSupport {
 		} else {
 			return null;
 		}
+	}
+
+	public void setRequired(final boolean aRequired) {
+		required = aRequired;
+	}
+
+	public boolean isRequired() {
+		return required;
 	}
 
 	public void setDialogTitle(final String aTitle) {
